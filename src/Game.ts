@@ -49,6 +49,7 @@ export default class Game {
     loading: boolean = true;
 
     water_button: HTMLDivElement;
+    reset_button: HTMLDivElement;
 
     constructor() {
 
@@ -58,20 +59,34 @@ export default class Game {
 
     init_ui() {
         this.water_button = this.button.cloneNode() as HTMLDivElement
+        this.reset_button = this.button.cloneNode() as HTMLDivElement
+
+        const reset_button = this.reset_button
         const water_button = this.water_button
         
         this.water_button.innerHTML = 'Water Plant'
         water_button.style.position = 'absolute'
-
         water_button.style.top = '140px'
         water_button.style.left = '50%';
         water_button.style.transform = 'translateX(-50%)'
+
+        reset_button.innerHTML = 'Reset'
+        reset_button.style.position = 'absolute'
+        reset_button.style.top = '16px'
+        reset_button.style.left = '16px'
+        reset_button.style.border = '1px solid brown'
+        
 
         water_button.addEventListener('click', () => {
             this.waterCurrentPlant()
         })
 
+        reset_button.addEventListener('click', () => {
+            this.resetData()
+        })
+
         this.renderer.ui.appendChild(water_button);
+        this.renderer.ui.appendChild(reset_button)
 
        
     }
@@ -99,7 +114,8 @@ export default class Game {
         for(let i = 0; i < this.data.plants.length; i++) {
             const plant = await Plant.fromJSON(this.data.plants[i], this.cache)
             if(difference_s) {
-                plant.decreaseWaterLevelByTicks(this.getTicksBySeconds(difference_s))
+                const ticks = this.getTicksBySeconds(difference_s)
+                plant.fastForward(ticks)
             }
 
             this.createPlant(plant)

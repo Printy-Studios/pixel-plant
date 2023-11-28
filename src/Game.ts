@@ -54,7 +54,7 @@ export default class Game {
     constructor() {
 
         this.button.classList.add('button')
-        this.init_ui();
+        
     }
 
     init_ui() {
@@ -178,15 +178,25 @@ export default class Game {
     }
 
     async init() {
-        this.loading = true;
+        this.setLoading(true)
 
         window.addEventListener('resize', () => {
             this.calculatePositions()
         })
 
         await this.initPlants();
+        this.init_ui();
         this.calculatePositions();
-        this.loading = false;
+        this.setLoading(false)
+    }
+
+    setLoading(loading: boolean) {
+        this.loading = loading;
+        if (this.loading) {
+            this.renderer.ui.style.display = 'none'
+        } else {
+            this.renderer.ui.style.display = 'block'
+        }
     }
 
     start() {

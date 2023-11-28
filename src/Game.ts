@@ -20,9 +20,11 @@ type Plants = {
     [id: string]: Plant
 }
 
+type ViewID = 'plant'
+
 export default class Game {
 
-    renderer = new Renderer('canvas', 'ui');
+    renderer = new Renderer('canvas', 'ui', 'menus');
     cache = new MyCache();
     storage = new MyStorage();
 
@@ -51,10 +53,20 @@ export default class Game {
     water_button: HTMLDivElement;
     reset_button: HTMLDivElement;
 
+    main_menu: HTMLDivElement
+
+    current_view: ViewID | null = null;
+
     constructor() {
 
         this.button.classList.add('button')
         
+    }
+
+    createButton(class_name: string = null) {
+        const btn = this.button.cloneNode() as HTMLDivElement
+        btn.classList.add(class_name)
+        return btn;
     }
 
     init_ui() {
@@ -76,6 +88,25 @@ export default class Game {
         reset_button.style.left = '16px'
         reset_button.style.border = '1px solid brown'
         
+
+        const play_button = this.createButton('menu-button')
+        play_button.innerHTML = 'My Plant'
+
+
+
+        this.main_menu = document.createElement('div')
+        this.main_menu.classList.add('menu')
+        this.main_menu.style.alignItems = 'center'
+        this.main_menu.style.justifyContent = 'center'
+        this.main_menu.id = 'main'
+        this.main_menu.appendChild(play_button)
+
+        this.renderer.addMenu(this.main_menu, 'main')
+
+
+        play_button.addEventListener('click', () => {
+            this.setView('plant')
+        })
 
         water_button.addEventListener('click', () => {
             this.waterCurrentPlant()
@@ -141,6 +172,11 @@ export default class Game {
         this.storage.set('data', this.data);
     }
 
+    setView(view_name: ViewID | null) {
+        this.current_view = view_name
+        this.renderer.hideMenu();
+    }
+
     async setDataToDefaults() {
         const basic_plant = await Plant.fromTemplate(0, 'basic_plant', this.cache);
 
@@ -187,15 +223,26 @@ export default class Game {
         await this.initPlants();
         this.init_ui();
         this.calculatePositions();
+        console.log('showing menu')
         this.setLoading(false)
+        this.renderer.showMenu('main')
+        //console.log(this.renderer.menu)
     }
 
     setLoading(loading: boolean) {
         this.loading = loading;
         if (this.loading) {
             this.renderer.ui.style.display = 'none'
+            if(this.renderer.menu) {
+                this.renderer.currentMenu().style.display = 'none'
+            }
         } else {
-            this.renderer.ui.style.display = 'block'
+            if(this.renderer.menu) {
+                this.renderer.currentMenu().style.display = 'block'
+            } else {
+                this.renderer.ui.style.display = 'block'
+            }
+            
         }
     }
 
@@ -210,7 +257,7 @@ export default class Game {
 
     draw() {
         this.renderer.clear();
-        if(!this.loading) {
+        if(!this.loading && !this.renderer.menu && this.current_view == 'plant') {
             this.renderer.drawPlant(this.plant);
         }
     }
@@ -226,7 +273,7 @@ export default class Game {
         this.last_frame_time = new Date().getTime();
         this.delta_sum += this.delta;
 
-        if(this.delta_sum > this.seconds_per_tick && !this.loading) {
+        if(this.delta_sum > this.seconds_per_tick && !this.loading && this.current_view == 'plant') {
             this.tick();
             this.delta_sum = 0;
         }

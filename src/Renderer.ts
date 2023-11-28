@@ -11,10 +11,14 @@ export default class Renderer {
     ctx: CanvasRenderingContext2D;
     scale: number = constants.scale;
     ui: HTMLDivElement;
+    menus: { [key: string]: HTMLDivElement} = {};
+    menu_element: HTMLDivElement;
+    menu: string = null
 
-    constructor(canvas_id: string, ui_id: string){
+    constructor(canvas_id: string, ui_id: string, menu_id: string){
         this.canvas = document.getElementById(canvas_id) as HTMLCanvasElement;
         this.ui = document.getElementById(ui_id) as HTMLDivElement;
+        this.menu_element = document.getElementById(menu_id) as HTMLDivElement
         if(!this.canvas) {
             throw new Error('Could not find canvas element by id ' + canvas_id);
         }
@@ -26,7 +30,6 @@ export default class Renderer {
 
         this.ctx = this.canvas.getContext('2d');
         this.calculateCanvasSize();
-        
     }
 
     calculateCanvasSize() {
@@ -59,6 +62,10 @@ export default class Renderer {
         )
     }
 
+    currentMenu() {
+        return document.getElementById(this.menu);
+    }
+
     drawProgressBar(progress_bar: ProgressBar) {
         const { position, size } = progress_bar;
         const { x, y } = position
@@ -85,6 +92,40 @@ export default class Renderer {
         this.drawSprite(plant.getCurrentStage().sprite)
         this.drawProgressBar(plant.water_level_bar)
         //this.drawSprite
+    }
+
+    addMenu(menu: HTMLDivElement, menu_id: string = null) {
+        if(menu_id) {
+            menu.id = menu_id + '-menu'
+        }
+        document.getElementById('menus').appendChild(menu);
+        this.menus[menu_id] = menu;
+    }
+
+    showMenu(menu_id: string) {
+        this.ui.style.display = 'none';
+        this.menu_element.style.display = 'flex'
+        this.hideMenu();
+        document.getElementById(menu_id + '-menu').style.display = 'flex'
+        this.menu_element.style.display = 'flex';
+        this.hideUI()
+        //this.menu_element.replaceWith(this.menu)
+    }
+
+    hideUI() {
+        this.ui.style.display = 'none'
+    }
+
+    showUI() {
+        this.ui.style.display = 'block';
+    }
+
+    hideMenu() {
+        Object.keys(this.menus).forEach(menu_id => {
+            document.getElementById(menu_id + '-menu').style.display = 'none'
+        })
+        this.menu_element.style.display = 'none';
+        this.showUI()
     }
 
 }

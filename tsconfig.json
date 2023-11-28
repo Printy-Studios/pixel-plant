@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "sourceMap": true,
+        "rootDir": "./src/",
+        "outDir": "./dist/",
+        "noImplicitAny": true,
+        "module": "es6",
+        "target": "ES2015",
+        "allowJs": true,
+        "moduleResolution": "node"
+    },
+    "include": ["./src"]
+}

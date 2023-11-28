@@ -1,0 +1,36 @@
+body, html {
+    margin: 0px;
+}
+
+#canvas {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    image-rendering: pixelated;
+}
+
+#ui {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+}
+
+.button {
+    width: fit-content;
+    padding: 8px;
+    border: 1px solid blue;
+    display: flex;
+    align-Items: center;
+    justify-Content: center;
+    cursor: pointer;
+    user-select: none;
+    border-radius: 4px;
+}
+
+.button:hover {
+    background-color: lightblue;
+}
+
+.button:active {
+    background-color: blue;
+}

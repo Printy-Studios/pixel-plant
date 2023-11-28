@@ -1,0 +1,18 @@
+{
+  "scripts": {
+    "start": "webpack serve --open",
+    "build": "webpack"
+  },
+  "devDependencies": {
+    "ts-loader": "^9.4.4",
+    "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.2.2",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1"
+  },
+  "dependencies": {
+    "copy-webpack-plugin": "^11.0.0"
+  }
+}

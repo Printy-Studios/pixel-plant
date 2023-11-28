@@ -1,0 +1,36 @@
+{
+    "plant_id": "basic_plant",
+    "water_level": {
+        "decrease_rate": 4,
+        "stages": [
+            {
+                "from": "0",
+                "to": "100",
+                "growth_rate": 4
+            }
+        ]
+    },
+    "stages": [
+        {
+            "at_growth": 50
+        },
+        {
+            "at_growth": 100
+        },
+        {
+            "at_growth": 150
+        },
+        {
+            "at_growth": 200
+        },
+        {
+            "at_growth": 250
+        },
+        {
+            "at_growth": 300
+        },
+        {
+            "at_growth": 350
+        }
+    ]
+}

@@ -24,29 +24,48 @@ body, html {
 .menu {
     position: absolute;
     display: flex;
+    flex-direction: column;
+    gap: 8px;
     align-items: center;
-    justify-content: center;
+    padding-block: 16px;
     width: 100vw;
     height: 100vh;
+    overflow-y: scroll;
 }
 
 .button {
     width: fit-content;
     padding: 8px;
-    border: 1px solid blue;
+    border: 1px solid brown;
+    color: brown;
     display: flex;
     align-Items: center;
     justify-Content: center;
     cursor: pointer;
     user-select: none;
     border-radius: 4px;
+    background-color: white;
 }
 
 .button:hover {
-    background-color: lightblue;
+    color: white;
+    background-color: brown;
 }
 
 .button:active {
+    color: brown;
+    background-color: white;
+}
+
+.water-button {
+    background-color: blue;
+}
+
+.water-button:hover {
+    background-color: lightblue;
+}
+
+.water-button:active {
     background-color: blue;
 }
 
@@ -55,6 +74,7 @@ body, html {
     width: 100%;
     border: 1px solid brown;
     color: brown;
+    background-color: white;
 }
 
 .menu-button:hover {
@@ -66,3 +86,47 @@ body, html {
     background: white;
     color: brown;
 }
+
+.plant-button {
+    max-width: 240px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.small-button {
+    max-width: 80px;
+}
+
+.progress-message {
+    display: none;
+
+    flex-direction: column;
+    align-items: flex-end;
+    position: absolute;
+    background: white;
+    padding: 32px;
+    border-radius: 8px;
+    border: 1px solid brown;
+    max-width: 200px;
+    width: 100%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.pace-selector {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 180px;
+    height: 40px;
+    width: 100%;
+}
+
+.collection-image {
+    /*max-width: 500px;*/
+    image-rendering: pixelated;
+    width: 100%;
+}
+

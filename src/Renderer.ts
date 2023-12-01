@@ -62,6 +62,14 @@ export default class Renderer {
         )
     }
 
+    drawLine(from: Vector, to: Vector, color: string) {
+        this.ctx.strokeStyle = color;
+        this.ctx.beginPath()
+        this.ctx.moveTo(from.x, from.y)
+        this.ctx.lineTo(to.x, to.y)
+        this.ctx.stroke()
+    }
+
     currentMenu() {
         return document.getElementById(this.menu);
     }
@@ -81,9 +89,24 @@ export default class Renderer {
             
             new_rect.size.x = progress_bar.current / 100 * progress_bar.size.x 
             this.drawRect(new_rect, progress_bar.color)
+
+            const bar_length = new_rect.right - new_rect.left;
+            const y = new_rect.position.y - 1;
+            const end_y = new_rect.bottom + 2;
+            for(const divider of progress_bar.dividers) {
+                
+                const x = new_rect.position.x - (bar_length / 2 )+ bar_length / 100 * divider;
+                
+                const pos1 = new Vector(x, y)
+                const pos2 = new Vector(x, end_y)
+
+                this.drawLine(pos1, pos2, progress_bar.divider_color)
+            }
         } else {
             throw new Error('Progress bar rendering only implemented for right direction')
         }
+
+        
         
     }
 

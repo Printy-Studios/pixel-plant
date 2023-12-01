@@ -16,12 +16,39 @@ export default class WaterLevel {
         this.stages = stages;
         this.current = 100;
         this.decrease_rate = decrease_rate;
+        this.validateStages();
         this.calcCurrentStage();
+    }
+
+    private validateStages() {
+        console.log(this.stages.length)
+        for(let a = 0; a < this.stages.length; a++) {
+            
+            const stage_a = this.stages[a - 1]
+            const stage_b = this.stages[a]
+            const stage_c = this.stages[a + 1]
+            let valid;
+
+            if (this.stages.length == 1) {
+                valid = stage_b.from == 0 && stage_b.to == 100
+            } else if (a == 0) {
+                valid = stage_b.from == 0 && stage_b.to == stage_c.from
+            } else if (a != this.stages.length - 1) {
+                valid = stage_a.to == stage_b.from && stage_b.to == stage_c.from
+            } else {
+                valid = stage_b.from == stage_a.to && stage_b.to == 100
+            }
+            if(!valid) {
+                throw new Error('Invalid water level')
+            }
+        }
     }
 
     private calcCurrentStage() {
         for (let i = 0; i < this.stages.length; i++) {
             const stage = this.stages[i];
+            //console.log(stage)
+            //console.log(this.current)
             if(this.current <= stage.to && this.current >= stage.from) {
                 this.current_stage = i;
                 return;
@@ -57,6 +84,7 @@ export default class WaterLevel {
         template.water_level.stages.forEach((stage) => {
             stages.push(stage);
         })
+        console.log(template.water_level)
         return new WaterLevel(
             template.water_level.decrease_rate,
             stages

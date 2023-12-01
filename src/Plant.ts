@@ -25,6 +25,8 @@ export type PlantData = {
 
 export type PlantTemplate = {
     plant_id: string,
+    name: string,
+    unlocks?: string,
     water_level: {
         decrease_rate: number,
         stages: {
@@ -63,19 +65,7 @@ export default class Plant extends GameObject {
             },
         ]
     );
-    water_level_bar: ProgressBar =  new ProgressBar(
-        new Rect(
-            new Vector(0, 0),
-            new Vector(20, 2)
-        ),
-        {
-            bg_color: '#0008FF42',
-            color: '#0008FFAD',
-            direction: 'right',
-            current: 0,
-        }
-        
-    )
+    water_level_bar: ProgressBar; 
     current_stage: number = 0;
     stages: PlantStage[]
     growth: number = 0;
@@ -86,16 +76,39 @@ export default class Plant extends GameObject {
         super()
         this.id = id;
         Object.assign(this, options);
-        this.setPosition(new Vector(window.innerWidth / 2 / constants.scale, window.innerHeight / 2 / constants.scale));
 
+        const dividers = this.water_level.stages.map(stage => stage.to);
+        dividers.pop();
+
+        this.water_level_bar = new ProgressBar(
+            new Rect(
+                new Vector(0, 0),
+                new Vector(20, 2)
+            ),
+            {
+                bg_color: '#0008FF42',
+                color: '#0008FFAD',
+                divider_color: 'darkblue',
+                direction: 'right',
+                current: 0,
+                dividers
+            }
+        )
         
         this.water_level_bar.current = this.water_level.current
         
+        this.setPosition(new Vector(window.innerWidth / 2 / constants.scale, window.innerHeight / 2 / constants.scale));
+    }
+
+    maxGrowth() {
+        return this.stages[this.stages.length - 1].at_growth
+    }
+
+    isFullyGrown() {
+        return this.growth > this.maxGrowth() 
     }
 
     toJSON(): PlantData {
-        console.log('this: ');
-        console.log(this)
         return {
             id: this.id,
             plant_id: this.plant_id,
@@ -116,14 +129,18 @@ export default class Plant extends GameObject {
     static async stagesFromTemplate(template: PlantTemplate, cache: MyCache) {
         const plant_stages: PlantStage[] = []
         for(let i = 0; i < template.stages.length; i++) {
-            const res_id = 'images/basic_plant/' + i;
+            const res_id = 'images/' + template.plant_id + '/' + i;
             if(!cache.has(res_id)) {
                 try {
                     const img_url = './images/' + template.plant_id + '/' + template.plant_id + '_' + i + '.png'
                     const img_res = await fetch(img_url);
                     const img_data = await img_res.blob();
                     const image = await createImageBitmap(img_data);
+                    
+
+                    const blob_id = 'image_blobs/' + template.plant_id + '/' + i;
                     cache.set(res_id, image);
+                    cache.set(blob_id, img_data);
                 } catch(e) {
                     throw new Error('Could not load image: ' + e.message)
                 }

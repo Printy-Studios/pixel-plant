@@ -7,7 +7,9 @@ type ProgressBarOptions = {
     current: number,
     color: string,
     bg_color: string,
+    divider_color?: string,
     direction: Direction
+    dividers?: number[] //Places on the bar where a divider should be
 }
 
 
@@ -16,6 +18,8 @@ export default class ProgressBar extends Rect {
     color: string
     bg_color: string
     direction: Direction
+    dividers: number[]
+    divider_color: string
 
     constructor(rect: Rect, options: ProgressBarOptions) {
         super(rect.position, rect.size)

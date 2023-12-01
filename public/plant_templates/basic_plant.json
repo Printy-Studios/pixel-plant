@@ -1,12 +1,24 @@
 {
     "plant_id": "basic_plant",
+    "unlocks": "yellow_dip",
+    "name": "Flower of Joy",
     "water_level": {
         "decrease_rate": 4,
         "stages": [
             {
-                "from": "0",
-                "to": "100",
+                "from": 0,
+                "to": 20,
+                "growth_rate": 2
+            },
+            {
+                "from": 20,
+                "to": 50,
                 "growth_rate": 4
+            },
+            {
+                "from": 50,
+                "to": 100,
+                "growth_rate": 6
             }
         ]
     },

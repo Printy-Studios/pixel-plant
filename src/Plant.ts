@@ -7,40 +7,17 @@ import Rect from './Rect';
 import { rangeOverlap } from './util';
 import MyCache from './MyCache';
 import constants from './const';
+import PlantTemplate from './PlantTemplate'
+import { PlantData } from './types/SaveData'
 
-type PlantID = string | number
+
 
 export type PlantStage = {
     sprite: Sprite,
     at_growth: number
 }
 
-export type PlantData = {
-    id: PlantID,
-    plant_id: string,
-    name: string,
-    water_level_current: number,
-    growth: number,
-    fully_grown_called: boolean,
-}
 
-export type PlantTemplate = {
-    plant_id: string,
-    name: string,
-    description: string,
-    unlocks?: string,
-    water_level: {
-        decrease_rate: number,
-        stages: {
-            from: number,
-            to: number,
-            growth_rate: number   
-        }[]
-    },
-    stages: {
-        at_growth: number
-    }[]
-}
 
 export type PlantOptions = {
     plant_id: string,

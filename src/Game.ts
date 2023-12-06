@@ -13,8 +13,9 @@ type PlantTemplates = {
 
 type SaveData = {
     pace: number,
-    max_id: number
-    plants: PlantData[]
+    max_id: number,
+    unlocked_plants: string[],
+    plant: PlantData,
     leave_time: number
 }
 
@@ -68,6 +69,13 @@ export default class Game {
 
     current_view: ViewID | null = null;
 
+    plant_image: HTMLImageElement = document.createElement('img');
+    plant_name: HTMLHeadingElement = document.createElement('h2');
+    plant_description: HTMLParagraphElement = document.createElement('p');
+    current_plant_in_menu: PlantTemplate;
+
+    recently_unlocked: string;
+
     constructor() {
         this.button.classList.add('button')
     }
@@ -78,7 +86,7 @@ export default class Game {
         return btn;
     }
 
-    async init_ui() {
+    async initUi() {
         // Game UI
         this.water_button = this.button.cloneNode() as HTMLDivElement
         this.reset_button = this.button.cloneNode() as HTMLDivElement
@@ -155,7 +163,7 @@ export default class Game {
         options_back.innerHTML = 'Back'
 
         const reset_button = this.createButton('menu-button')
-        reset_button.innerHTML = 'Reset'
+        reset_button.innerHTML = 'Reset Game'
 
         const pace_selector = document.createElement('div')
         const pace_selector_label = document.createElement('p')
@@ -172,14 +180,12 @@ export default class Game {
             "0.5": 0.5,
             "0.25": 0.25
         }
-
+        console.log('pace');
         for (const pace_key in paces) {
             const option = document.createElement('option')
             option.value = pace_key
             option.innerHTML = pace_key
-            console.log(this.seconds_per_tick)
-            console.log(pace_key)
-            if(parseFloat(pace_key) == this.seconds_per_tick) {
+            if(parseFloat(pace_key) == 1 / this.seconds_per_tick) {
                 option.selected = true;
             }
             pace_selector_dropdown.appendChild(option)
@@ -212,24 +218,56 @@ export default class Game {
             const plant_template = this.plant_templates[template_id]
             const max_stage = plant_template.stages.length - 1;
 
-            const image = this.cache.get('image_blobs/' + plant_template.plant_id + '/' + max_stage)
-
-            const image_url = URL.createObjectURL(image);
-
             const img_element = document.createElement('img')
             img_element.classList.add('collection-image')
-            img_element.src = image_url
-
-            const text = document.createElement('p');
-            text.innerHTML = plant_template.name
 
             plant_button.appendChild(img_element)
-            plant_button.appendChild(text);
+
+            if(this.data.unlocked_plants.includes(plant_template.plant_id)) {
+                const image = this.cache.get('image_blobs/' + plant_template.plant_id + '/' + max_stage)
+
+                const image_url = URL.createObjectURL(image);
+
+                img_element.src = image_url
+
+                const text = document.createElement('p');
+                text.innerHTML = plant_template.name
+
+                
+                plant_button.appendChild(text);
+
+                plant_button.addEventListener('click', () => {
+                    this.showPlantMenu(plant_template);
+                });
+            } else {
+                img_element.src = 'images/question-mark.png'
+            }
+            
+            
 
             collection_menu.appendChild(plant_button)
 
         }
 
+
+        //Plant Entry
+        const plant_menu = document.createElement('div');
+
+        const plant_back = this.createButton('menu-button');
+        plant_back.innerHTML = 'Back';
+
+        this.plant_image.classList.add('collection-image');
+
+        const plant_button = this.createButton('menu-button');
+        plant_button.innerHTML = 'Plant';
+
+        plant_menu.appendChild(plant_back);
+        plant_menu.appendChild(this.plant_image);
+        plant_menu.appendChild(this.plant_name);
+        plant_menu.appendChild(this.plant_description);
+        plant_menu.appendChild(plant_button);
+
+        
 
 
         // Event handlers
@@ -253,6 +291,7 @@ export default class Game {
 
         pace_selector_dropdown.addEventListener('change', (e: any) => {
             this.seconds_per_tick = 1 / parseFloat(e.target.value);
+            console.log(this.seconds_per_tick);
             this.saveData()
         })
 
@@ -266,7 +305,21 @@ export default class Game {
             this.renderer.showMenu('main')
         })
 
+        // Entry menu
+
+        plant_back.addEventListener('click', () => {
+            this.renderer.showMenu('main')
+        })
+
+        plant_button.addEventListener('click', () => {
+            this.plantNewPlant(this.current_plant_in_menu.plant_id);
+        })
+
         //Game UI
+
+        this.progress_message_plant.addEventListener('click', () => {
+            this.plantNewPlant(this.recently_unlocked)
+        })
 
         progress_message_container.addEventListener('focusout', () => {
             progress_message_container.style.display = 'none'
@@ -294,6 +347,7 @@ export default class Game {
         this.renderer.addMenu(this.main_menu, 'main')
         this.renderer.addMenu(options_menu, 'options')
         this.renderer.addMenu(collection_menu, 'collection')
+        this.renderer.addMenu(plant_menu, 'plant');
 
         this.renderer.ui.appendChild(water_button);
         this.renderer.ui.appendChild(back_button);
@@ -324,7 +378,7 @@ export default class Game {
             this.calculatePositions()
         })
         if(!this.first_init) {
-            await this.init_ui();
+            await this.initUi();
             console.log('initializing ui')
             this.first_init = true;
         }
@@ -332,6 +386,7 @@ export default class Game {
         await this.initPlants();
         this.calculatePositions();
 
+        
         this.setLoading(false)
         this.renderer.showMenu('main')
         //console.log(this.renderer.menu)
@@ -367,16 +422,17 @@ export default class Game {
 
         let difference_s = this.getTimeAway()
 
-        this.plants = {};
+        // this.plants = {};
 
-        for(let i = 0; i < this.data.plants.length; i++) {
-            const plant = await Plant.fromJSON(this.data.plants[i], this.cache)
-            this.createPlant(plant)
-        }
-
+        // for(let i = 0; i < this.data.plants.length; i++) {
+        //     const plant = await Plant.fromJSON(this.data.plants[i], this.cache)
+        //     this.createPlant(plant)
+        // }
+        const plant = await Plant.fromJSON(this.data.plant, this.cache)
+        this.createPlant(plant);
         //this.fastForwardBySeconds(difference_s)
 
-        this.plant = Object.values(this.plants)[0] as Plant;
+        this.setPlant(Object.values(this.plants)[0] as Plant);
     }
 
     async initTemplates() {
@@ -385,6 +441,26 @@ export default class Game {
             const json = await res.json()
             this.plant_templates[template_id] = json;
         }
+    }
+
+    onPlantFullyGrown(plant: Plant) {
+        console.log('plant fully grown')
+        let message = this.progressMessageText({ h: 0, m: 0}, true)
+
+        let show_plant_button = false;
+        const unlock = this.getTemplateUnlock(this.plant.plant_id);
+
+        if (unlock) {
+            message += '<br><b>You have unlocked a new plant - ' + unlock.name + '. Would you like to plant it?';
+            this.recently_unlocked = unlock.plant_id;
+            show_plant_button = true;
+        }
+
+        if(this.progress_message.style.display != 'none') {
+            this.displayProgressMessage(message, show_plant_button)
+        }
+        this.data.unlocked_plants.push(plant.unlocks);
+        this.saveData();
     }
 
     fastForwardBySeconds(seconds: number) {
@@ -414,32 +490,41 @@ export default class Game {
             
             let message = this.progressMessageText(time, growth_percent)
 
+            let show_plant_button = false;
             const unlock = this.getTemplateUnlock(this.plant.plant_id);
 
-            if(this.plant.isFullyGrown() && unlock) {
+            if (this.plant.isFullyGrown() && unlock) {
                 message += '<br><b>You have unlocked a new plant - ' + unlock.name + '. Would you like to plant it?';
-                this.progress_message_plant.style.display = 'flex'
-            } else {
-                this.progress_message_plant.style.display = 'none'
+                show_plant_button = true;
             }
 
-            this.progress_message.innerHTML = message;
-            this.progress_message_container.style.display = 'flex'
-            this.progress_message_container.focus()
+            this.displayProgressMessage(message, show_plant_button);
         }
         
+    }
+
+    displayProgressMessage(message: string, show_plant_button: boolean = false,) {
+        if(show_plant_button) {
+            this.progress_message_plant.style.display = 'flex';
+        } else {
+            this.progress_message_plant.style.display = 'none';
+        }
+        this.progress_message.innerHTML = message;
+        this.progress_message_container.style.display = 'flex'
+        this.progress_message_container.focus()
     }
 
     /**
      * If you want to indicate that the plant has fully grown, pass 'true' for `growth_percentage`
      */
     progressMessageText(time: {h: number, m: number}, growth_percentage: number | boolean) {
+        const away_str = time.h > 0 && time.m > 0 ? 'You were away for' : '';
         const hrs_str = time.h == 1 ? '1 hour' : time.h > 0 ? time.h + ' hours' : ''
         const mins_str =  time.m == 1 ? '1 minute' : time.m > 0 ? time.m + ' minutes' : ''
         const and_str = time.h > 0 && time.m > 0 ? 'and' : ''
 
-        const growth_str = typeof growth_percentage === 'boolean' ? 'fully grown' : 'grown by ' + growth_percentage + ' &'
-        return `You were away for ${hrs_str} ${and_str} ${mins_str} and your plant has ${growth_str}`
+        const growth_str = typeof growth_percentage === 'boolean' ? 'fully grown' : 'grown by ' + growth_percentage + ' %'
+        return `${away_str} ${hrs_str} ${and_str} ${mins_str} ${and_str} your plant has ${growth_str}`
     }
 
     getTicksBySeconds(seconds: number) {
@@ -455,7 +540,7 @@ export default class Game {
         }
         //Otherwise get current plants and save them
         this.data.pace = 1 / this.seconds_per_tick;
-        this.data.plants = Object.values(this.plants).map((plant) => plant.toJSON())
+        this.data.plant = this.plant.toJSON();
         this.data.leave_time = new Date().getTime();
         this.storage.set('data', this.data);
     }
@@ -481,9 +566,8 @@ export default class Game {
             pace: 1,
             max_id: 1,
             leave_time: null,
-            plants: [
-                basic_plant.toJSON()
-            ]
+            unlocked_plants: ["basic_plant"],
+            plant: basic_plant.toJSON()
         }
 
         this.saveData(this.data);
@@ -515,7 +599,11 @@ export default class Game {
         this.water_button.style.top = this.plant.position.y * constants.scale + 160 + 'px'
     }
 
-    
+    getPlantTemplateFullyGrownImageURL(plant_template: PlantTemplate) {
+        const max_stage = plant_template.stages.length - 1;
+        const image = this.cache.get('image_blobs/' + plant_template.plant_id + '/' + max_stage)
+        return URL.createObjectURL(image);
+    }
 
     setLoading(loading: boolean) {
         this.loading = loading;
@@ -574,6 +662,26 @@ export default class Game {
 
     createPlant(plant: Plant) {
         this.plants[plant.id] = plant;
+    }
+
+    showPlantMenu(plant_template: PlantTemplate) {
+        this.plant_image.src = this.getPlantTemplateFullyGrownImageURL(plant_template);
+        this.plant_name.innerHTML = plant_template.name;
+        this.plant_description.innerHTML = plant_template.description;
+        this.current_plant_in_menu = plant_template;
+        this.renderer.showMenu('plant');
+    }
+
+    async plantNewPlant(template_id: string) {
+        console.log('planting')
+        const plant = await Plant.fromTemplate('my_plant', template_id, this.cache);
+        this.setPlant(plant);
+        this.setView('plant');
+    }
+
+    setPlant(plant: Plant) {
+        this.plant = plant;
+        this.plant.onFullyGrown(this.onPlantFullyGrown.bind(this));
     }
 
 }

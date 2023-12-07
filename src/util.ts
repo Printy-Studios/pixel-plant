@@ -1,3 +1,5 @@
+import { PlantTemplate } from './Plant';
+
 export function rangeOverlap(x1: number, x2: number, y1: number, y2: number) {
     return Math.max(0, Math.min (x2, y2) - Math.max (x1, y1) + 1);
 }
@@ -17,4 +19,8 @@ export function secondsToTime(secs: number) {
         "s": seconds
     };
     return obj;
+}
+
+export function getTemplateMaxStageIndex(template: PlantTemplate) {
+    return template.stages.length - 1;
 }

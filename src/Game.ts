@@ -4,7 +4,7 @@ import MyStorage from './MyStorage';
 import Plant, { PlantData, PlantStage, PlantTemplate } from './Plant';
 import BasicPlant from './plants/BasicPlant';
 import Renderer from './Renderer';
-import { secondsToTime } from './util';
+import { getTemplateMaxStageIndex, secondsToTime } from './util';
 import Vector from './Vector';
 
 type PlantTemplates = {
@@ -97,11 +97,8 @@ export default class Game {
 
     initGameUI() {
         // Game UI
-        this.water_button = this.button.cloneNode() as HTMLDivElement
-        this.reset_button = this.button.cloneNode() as HTMLDivElement
-
         
-        const water_button = this.water_button
+        const water_button = this.createButton('water-button');
         
         this.water_button.innerHTML = 'Water Plant'
         water_button.style.position = 'absolute'
@@ -191,8 +188,7 @@ export default class Game {
         //Main menu
         play_button.addEventListener('click', () => {
             this.setView('plant')
-            const time_away = this.getTimeAway() 
-            this.fastForwardBySeconds(time_away)
+            this.fastForwardBySeconds(this.getTimeAway())
         })
 
         options_button.addEventListener('click', () => {
@@ -232,7 +228,6 @@ export default class Game {
             "0.5": 0.5,
             "0.25": 0.25
         }
-        console.log('pace');
         for (const pace_key in paces) {
             const option = document.createElement('option')
             option.value = pace_key
@@ -282,14 +277,16 @@ export default class Game {
             plant_button.classList.add('plant-button')
             // const plant = await Plant.fromTemplate(template_id, template_id, this.cache)
             const plant_template = this.plant_templates[template_id]
-            const max_stage = plant_template.stages.length - 1;
+            const max_stage = getTemplateMaxStageIndex(plant_template);
 
             const img_element = document.createElement('img')
             img_element.classList.add('collection-image')
 
             plant_button.appendChild(img_element)
 
-            if(this.data.unlocked_plants.includes(plant_template.plant_id)) {
+            let is_plant_unlocked = this.data.unlocked_plants.includes(plant_template.plant_id)
+
+            if(is_plant_unlocked) {
                 const image = this.cache.get('image_blobs/' + plant_template.plant_id + '/' + max_stage)
 
                 const image_url = URL.createObjectURL(image);
@@ -434,8 +431,7 @@ export default class Game {
 
     async initPlants() {
         const plant = await Plant.fromJSON(this.data.plant, this.cache)
-        this.createPlant(plant);
-        this.setPlant(Object.values(this.plants)[0] as Plant);
+        this.setPlant(plant);
     }
 
     async initTemplates() {
@@ -560,7 +556,6 @@ export default class Game {
 
     async setDataToDefaults() {
         const basic_plant = await Plant.fromTemplate(0, 'basic_plant', this.cache);
-
         
         this.data = {
             pace: 1,
@@ -587,7 +582,8 @@ export default class Game {
 
     getTimeAway() {
         let current_time_ms = new Date().getTime();
-        return this.data.leave_time ? (current_time_ms - this.data.leave_time) / 1000 : null;
+        let time_difference_ms = current_time_ms - this.data.leave_time
+        return this.data.leave_time ? (time_difference_ms) / 1000 : null;
     }
 
     calculatePositions() {
@@ -665,9 +661,9 @@ export default class Game {
         this.delta_sum += this.delta;
     }
 
-    createPlant(plant: Plant) {
-        this.plants[plant.id] = plant;
-    }
+    // createPlant(plant: Plant) {
+    //     this.plants[plant.id] = plant;
+    // }
 
     showPlantMenu(plant_template: PlantTemplate) {
         this.plant_image.src = this.getPlantTemplateFullyGrownImageURL(plant_template);

@@ -86,7 +86,9 @@ export default class Plant extends GameObject {
         
         this.initWaterLevelBar();
         
-        this.setPosition(new Vector(window.innerWidth / 2 / constants.scale, window.innerHeight / 2 / constants.scale));
+        let pos_x = window.innerWidth / 2 / constants.scale;
+        let pos_y = window.innerHeight / 2 / constants.scale
+        this.setPosition(new Vector(pos_x, pos_y));
     }
 
     initWaterLevelBar() {

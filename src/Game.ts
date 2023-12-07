@@ -451,20 +451,7 @@ export default class Game {
 
     onPlantFullyGrown(plant: Plant) {
         console.log('plant fully grown')
-        let message = this.progressMessageText({ h: 0, m: 0}, true)
-
-        let show_plant_button = false;
-        const unlock = this.getTemplateUnlock(this.plant.plant_id);
-
-        if (unlock) {
-            message += '<br><b>You have unlocked a new plant - ' + unlock.name + '. Would you like to plant it?';
-            this.recently_unlocked = unlock.plant_id;
-            show_plant_button = true;
-        }
-
-        if(this.progress_message.style.display != 'none') {
-            this.displayProgressMessage(message, show_plant_button)
-        }
+        this.displayProgressMessage(false);
         this.data.unlocked_plants.push(plant.unlocks);
         this.saveData();
     }
@@ -482,10 +469,15 @@ export default class Game {
 
         const growth_after =  this.plant.growth;
         
+        this.displayProgressMessage(true, growth_before, growth_after, seconds)
+        
+    }
 
-        const time = secondsToTime(seconds);
+    displayProgressMessage(ff = true, growth_before: number = null, growth_after: number = null, seconds_elapsed: number = null) {
+
+        const time = secondsToTime(seconds_elapsed);
         console.log(time)
-        if(time.m > 0) {
+        if(time.m > 0 && ff) {
             const growth_difference = growth_after - growth_before;
             let growth_percent: number | boolean = growth_difference / this.plant.maxGrowth() * 100
 
@@ -503,21 +495,29 @@ export default class Game {
                 message += '<br><b>You have unlocked a new plant - ' + unlock.name + '. Would you like to plant it?';
                 show_plant_button = true;
             }
+        } else if(!ff) {
+            let message = this.progressMessageText({ h: 0, m: 0}, true)
 
-            this.displayProgressMessage(message, show_plant_button);
+            let show_plant_button = false;
+            const unlock = this.getTemplateUnlock(this.plant.plant_id);
+
+            if (unlock) {
+                message += '<br><b>You have unlocked a new plant - ' + unlock.name + '. Would you like to plant it?';
+                this.recently_unlocked = unlock.plant_id;
+                show_plant_button = true;
+            }
+
+            if(show_plant_button) {
+                this.progress_message_plant.style.display = 'flex';
+            } else {
+                this.progress_message_plant.style.display = 'none';
+            }
+            this.progress_message.innerHTML = message;
+            this.progress_message_container.style.display = 'flex'
+            this.progress_message_container.focus()
         }
+
         
-    }
-
-    displayProgressMessage(message: string, show_plant_button: boolean = false,) {
-        if(show_plant_button) {
-            this.progress_message_plant.style.display = 'flex';
-        } else {
-            this.progress_message_plant.style.display = 'none';
-        }
-        this.progress_message.innerHTML = message;
-        this.progress_message_container.style.display = 'flex'
-        this.progress_message_container.focus()
     }
 
     /**

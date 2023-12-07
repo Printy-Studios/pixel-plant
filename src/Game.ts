@@ -4,6 +4,7 @@ import MyStorage from './MyStorage';
 import Plant, { PlantData, PlantStage, PlantTemplate } from './Plant';
 import BasicPlant from './plants/BasicPlant';
 import Renderer from './Renderer';
+import UIInitializer from './UIInitializer';
 import { getPlantImageBloblID, getPlantImageID, getTemplateMaxStageIndex, getViewportCenter, secondsToTime } from './util';
 import Vector from './Vector';
 
@@ -95,272 +96,272 @@ export default class Game {
         return menu;
     }
 
-    initGameUI() {
-        // Game UI
+    // initGameUI() {
+    //     // Game UI
         
-        const water_button = this.createButton('water-button');
+    //     const water_button = this.createButton('water-button');
         
-        this.water_button.innerHTML = 'Water Plant'
-        water_button.style.position = 'absolute'
-        water_button.style.top = '140px'
-        water_button.style.left = '50%';
-        water_button.style.transform = 'translateX(-50%)'
-        water_button.tabIndex = 4;
+    //     this.water_button.innerHTML = 'Water Plant'
+    //     water_button.style.position = 'absolute'
+    //     water_button.style.top = '140px'
+    //     water_button.style.left = '50%';
+    //     water_button.style.transform = 'translateX(-50%)'
+    //     water_button.tabIndex = 4;
 
-        //Back button
-        const back_button = this.createButton('button');
-        back_button.innerHTML = 'Back'
-        back_button.style.position = 'absolute'
-        back_button.style.top = '16px'
-        back_button.style.left = '16px'
-        back_button.tabIndex = 2
+    //     //Back button
+    //     const back_button = this.createButton('button');
+    //     back_button.innerHTML = 'Back'
+    //     back_button.style.position = 'absolute'
+    //     back_button.style.top = '16px'
+    //     back_button.style.left = '16px'
+    //     back_button.tabIndex = 2
         
-        //Progress message
-        const progress_message_container = document.createElement('div')
-        this.progress_message_container = progress_message_container
-        progress_message_container.classList.add('progress-message')
-        progress_message_container.tabIndex = 0;
+    //     //Progress message
+    //     const progress_message_container = document.createElement('div')
+    //     this.progress_message_container = progress_message_container
+    //     progress_message_container.classList.add('progress-message')
+    //     progress_message_container.tabIndex = 0;
 
-        this.progress_message = document.createElement('p')
-        const progress_message = this.progress_message;
-        progress_message.innerHTML = 'You were away for n hours n minutes and your plant has grown by x %'
+    //     this.progress_message = document.createElement('p')
+    //     const progress_message = this.progress_message;
+    //     progress_message.innerHTML = 'You were away for n hours n minutes and your plant has grown by x %'
 
-        this.progress_message_plant = this.createButton('menu-button')
-        this.progress_message_plant.classList.add('small-button')
-        this.progress_message_plant.innerHTML = 'Plant'
+    //     this.progress_message_plant = this.createButton('menu-button')
+    //     this.progress_message_plant.classList.add('small-button')
+    //     this.progress_message_plant.innerHTML = 'Plant'
 
-        progress_message_container.appendChild(progress_message);
-        progress_message_container.appendChild(this.progress_message_plant)
+    //     progress_message_container.appendChild(progress_message);
+    //     progress_message_container.appendChild(this.progress_message_plant)
 
-        this.progress_message_plant.addEventListener('click', () => {
-            this.plantNewPlant(this.recently_unlocked)
-        })
+    //     this.progress_message_plant.addEventListener('click', () => {
+    //         this.plantNewPlant(this.recently_unlocked)
+    //     })
 
-        progress_message_container.addEventListener('focusout', () => {
-            progress_message_container.style.display = 'none'
-        })
+    //     progress_message_container.addEventListener('focusout', () => {
+    //         progress_message_container.style.display = 'none'
+    //     })
 
-        water_button.addEventListener('click', () => {
-            this.waterCurrentPlant()
-        })
+    //     water_button.addEventListener('click', () => {
+    //         this.waterCurrentPlant()
+    //     })
 
-        this.reset_button.addEventListener('click', () => {
-            const confirm_reset = confirm('Are you sure you want to reset the game? All data will be lost')
-            if(confirm_reset) {
-                this.resetData()
-            }
+    //     this.reset_button.addEventListener('click', () => {
+    //         const confirm_reset = confirm('Are you sure you want to reset the game? All data will be lost')
+    //         if(confirm_reset) {
+    //             this.resetData()
+    //         }
             
-        })
+    //     })
 
-        back_button.addEventListener('click', () => {
-            this.renderer.showMenu('main')
-            this.setView(null)
-        })
+    //     back_button.addEventListener('click', () => {
+    //         this.renderer.showMenu('main')
+    //         this.setView(null)
+    //     })
 
-        this.renderer.ui.appendChild(water_button);
-        this.renderer.ui.appendChild(back_button);
-        this.renderer.ui.appendChild(progress_message_container)
-    }
+    //     this.renderer.ui.appendChild(water_button);
+    //     this.renderer.ui.appendChild(back_button);
+    //     this.renderer.ui.appendChild(progress_message_container)
+    // }
 
-    initMainMenu() {
-        //Main menu
+    // initMainMenu() {
+    //     //Main menu
 
-        //Play button
-        const play_button = this.createButton('menu-button')
-        play_button.innerHTML = 'My Plant'
+    //     //Play button
+    //     const play_button = this.createButton('menu-button')
+    //     play_button.innerHTML = 'My Plant'
 
-        //Collection button
-        const collection_button = this.createButton('menu-button')
-        collection_button.innerHTML = 'Collection'
+    //     //Collection button
+    //     const collection_button = this.createButton('menu-button')
+    //     collection_button.innerHTML = 'Collection'
 
-        //Options button
-        const options_button = this.createButton('menu-button')
-        options_button.innerHTML = 'Options'
+    //     //Options button
+    //     const options_button = this.createButton('menu-button')
+    //     options_button.innerHTML = 'Options'
 
-        this.main_menu = this.createMenu();
+    //     this.main_menu = this.createMenu();
 
-        this.main_menu.appendChild(play_button)
-        this.main_menu.appendChild(collection_button)
-        this.main_menu.appendChild(options_button)
+    //     this.main_menu.appendChild(play_button)
+    //     this.main_menu.appendChild(collection_button)
+    //     this.main_menu.appendChild(options_button)
 
-        // Event handlers
+    //     // Event handlers
 
-        //Main menu
-        play_button.addEventListener('click', () => {
-            this.setView('plant')
-            this.fastForwardBySeconds(this.getTimeAway())
-        })
+    //     //Main menu
+    //     play_button.addEventListener('click', () => {
+    //         this.setView('plant')
+    //         this.fastForwardBySeconds(this.getTimeAway())
+    //     })
 
-        options_button.addEventListener('click', () => {
-            this.renderer.showMenu('options')
-        })
+    //     options_button.addEventListener('click', () => {
+    //         this.renderer.showMenu('options')
+    //     })
 
-        collection_button.addEventListener('click', () => {
-            this.renderer.showMenu('collection')
-        })
+    //     collection_button.addEventListener('click', () => {
+    //         this.renderer.showMenu('collection')
+    //     })
 
-        this.renderer.addMenu(this.main_menu, 'main')
-    }
+    //     this.renderer.addMenu(this.main_menu, 'main')
+    // }
 
-    initOptionsMenu() {
-        //Options menu
+    // initOptionsMenu() {
+    //     //Options menu
 
-        const options_menu = this.createMenu();
+    //     const options_menu = this.createMenu();
 
-        const options_back = this.createButton('menu-button')
-        options_back.innerHTML = 'Back'
+    //     const options_back = this.createButton('menu-button')
+    //     options_back.innerHTML = 'Back'
 
-        const reset_button = this.createButton('menu-button')
-        reset_button.innerHTML = 'Reset Game'
+    //     const reset_button = this.createButton('menu-button')
+    //     reset_button.innerHTML = 'Reset Game'
 
-        const pace_selector = document.createElement('div')
-        const pace_selector_label = document.createElement('p')
-        const pace_selector_dropdown = document.createElement('select')
+    //     const pace_selector = document.createElement('div')
+    //     const pace_selector_label = document.createElement('p')
+    //     const pace_selector_dropdown = document.createElement('select')
 
-        pace_selector.classList.add('pace-selector')
+    //     pace_selector.classList.add('pace-selector')
 
-        pace_selector_label.innerHTML = 'Pace: '
+    //     pace_selector_label.innerHTML = 'Pace: '
 
-        const paces = {
-            "4": 4,
-            "2": 2,
-            "1": 1,
-            "0.5": 0.5,
-            "0.25": 0.25
-        }
-        for (const pace_key in paces) {
-            const option = document.createElement('option')
-            option.value = pace_key
-            option.innerHTML = pace_key
-            let should_be_selected = parseFloat(pace_key) == 1 / this.seconds_per_tick
-            if(should_be_selected) {
-                option.selected = true;
-            }
-            pace_selector_dropdown.appendChild(option)
-        }
+    //     const paces = {
+    //         "4": 4,
+    //         "2": 2,
+    //         "1": 1,
+    //         "0.5": 0.5,
+    //         "0.25": 0.25
+    //     }
+    //     for (const pace_key in paces) {
+    //         const option = document.createElement('option')
+    //         option.value = pace_key
+    //         option.innerHTML = pace_key
+    //         let should_be_selected = parseFloat(pace_key) == 1 / this.seconds_per_tick
+    //         if(should_be_selected) {
+    //             option.selected = true;
+    //         }
+    //         pace_selector_dropdown.appendChild(option)
+    //     }
 
         
 
-        pace_selector.appendChild(pace_selector_label)
-        pace_selector.appendChild(pace_selector_dropdown)
+    //     pace_selector.appendChild(pace_selector_label)
+    //     pace_selector.appendChild(pace_selector_dropdown)
 
-        options_menu.appendChild(pace_selector)
-        options_menu.appendChild(options_back)
-        options_menu.appendChild(reset_button)
+    //     options_menu.appendChild(pace_selector)
+    //     options_menu.appendChild(options_back)
+    //     options_menu.appendChild(reset_button)
 
-        //Options menu
+    //     //Options menu
 
-        pace_selector_dropdown.addEventListener('change', (e: any) => {
-            this.seconds_per_tick = 1 / parseFloat(e.target.value);
-            this.saveData()
-        })
+    //     pace_selector_dropdown.addEventListener('change', (e: any) => {
+    //         this.seconds_per_tick = 1 / parseFloat(e.target.value);
+    //         this.saveData()
+    //     })
 
-        options_back.addEventListener('click', () => {
-            this.renderer.showMenu('main')
-        })
+    //     options_back.addEventListener('click', () => {
+    //         this.renderer.showMenu('main')
+    //     })
 
-        this.renderer.addMenu(options_menu, 'options')
-    }
+    //     this.renderer.addMenu(options_menu, 'options')
+    // }
 
-    initCollectionMenu() {
-        // Collection menu
+    // initCollectionMenu() {
+    //     // Collection menu
 
-        const collection_menu = this.createMenu()
+    //     const collection_menu = this.createMenu()
 
-        const collection_back = this.createButton('menu-button')
-        collection_back.innerHTML = 'Back'
+    //     const collection_back = this.createButton('menu-button')
+    //     collection_back.innerHTML = 'Back'
 
-        collection_menu.appendChild(collection_back)
+    //     collection_menu.appendChild(collection_back)
 
-        for(const template_id in this.plant_templates) {
-            const plant_button = this.createButton('menu-button');
-            plant_button.classList.add('plant-button')
-            // const plant = await Plant.fromTemplate(template_id, template_id, this.cache)
-            const plant_template = this.plant_templates[template_id]
-            const max_stage = getTemplateMaxStageIndex(plant_template);
+    //     for(const template_id in this.plant_templates) {
+    //         const plant_button = this.createButton('menu-button');
+    //         plant_button.classList.add('plant-button')
+    //         // const plant = await Plant.fromTemplate(template_id, template_id, this.cache)
+    //         const plant_template = this.plant_templates[template_id]
+    //         const max_stage = getTemplateMaxStageIndex(plant_template);
 
-            const img_element = document.createElement('img')
-            img_element.classList.add('collection-image')
+    //         const img_element = document.createElement('img')
+    //         img_element.classList.add('collection-image')
 
-            plant_button.appendChild(img_element)
+    //         plant_button.appendChild(img_element)
 
-            let is_plant_unlocked = this.data.unlocked_plants.includes(plant_template.plant_id)
+    //         let is_plant_unlocked = this.data.unlocked_plants.includes(plant_template.plant_id)
 
-            if(is_plant_unlocked) {
-                const image = this.cache.get('image_blobs/' + plant_template.plant_id + '/' + max_stage)
+    //         if(is_plant_unlocked) {
+    //             const image = this.cache.get('image_blobs/' + plant_template.plant_id + '/' + max_stage)
 
-                const image_url = URL.createObjectURL(image);
+    //             const image_url = URL.createObjectURL(image);
 
-                img_element.src = image_url
+    //             img_element.src = image_url
 
-                const text = document.createElement('p');
-                text.innerHTML = plant_template.name
+    //             const text = document.createElement('p');
+    //             text.innerHTML = plant_template.name
 
                 
-                plant_button.appendChild(text);
+    //             plant_button.appendChild(text);
 
-                plant_button.addEventListener('click', () => {
-                    this.showPlantMenu(plant_template);
-                });
-            } else {
-                img_element.src = 'images/question-mark.png'
-            }
+    //             plant_button.addEventListener('click', () => {
+    //                 this.showPlantMenu(plant_template);
+    //             });
+    //         } else {
+    //             img_element.src = 'images/question-mark.png'
+    //         }
             
             
 
-            collection_menu.appendChild(plant_button)
+    //         collection_menu.appendChild(plant_button)
 
-        }
+    //     }
 
-        // Collection menu
+    //     // Collection menu
 
-        collection_back.addEventListener('click', () => {
-            this.renderer.showMenu('main')
-        })
+    //     collection_back.addEventListener('click', () => {
+    //         this.renderer.showMenu('main')
+    //     })
 
-        this.renderer.addMenu(collection_menu, 'collection')
-    }
+    //     this.renderer.addMenu(collection_menu, 'collection')
+    // }
 
-    initPlantEntryMenu() {
-        //Plant Entry
-        const plant_menu = this.createMenu()
+    // initPlantEntryMenu() {
+    //     //Plant Entry
+    //     const plant_menu = this.createMenu()
 
-        const plant_back = this.createButton('menu-button');
-        plant_back.innerHTML = 'Back';
+    //     const plant_back = this.createButton('menu-button');
+    //     plant_back.innerHTML = 'Back';
 
-        this.plant_image.classList.add('collection-image');
+    //     this.plant_image.classList.add('collection-image');
 
-        const plant_button = this.createButton('menu-button');
-        plant_button.innerHTML = 'Plant';
+    //     const plant_button = this.createButton('menu-button');
+    //     plant_button.innerHTML = 'Plant';
 
-        plant_menu.appendChild(plant_back);
-        plant_menu.appendChild(this.plant_image);
-        plant_menu.appendChild(this.plant_name);
-        plant_menu.appendChild(this.plant_description);
-        plant_menu.appendChild(plant_button);
+    //     plant_menu.appendChild(plant_back);
+    //     plant_menu.appendChild(this.plant_image);
+    //     plant_menu.appendChild(this.plant_name);
+    //     plant_menu.appendChild(this.plant_description);
+    //     plant_menu.appendChild(plant_button);
 
-        // Entry menu
+    //     // Entry menu
 
-        plant_back.addEventListener('click', () => {
-            this.renderer.showMenu('main')
-        })
+    //     plant_back.addEventListener('click', () => {
+    //         this.renderer.showMenu('main')
+    //     })
 
-        plant_button.addEventListener('click', () => {
-            this.plantNewPlant(this.current_plant_in_menu.plant_id);
-        })
+    //     plant_button.addEventListener('click', () => {
+    //         this.plantNewPlant(this.current_plant_in_menu.plant_id);
+    //     })
 
-        this.renderer.addMenu(plant_menu, 'plant');
-    }
+    //     this.renderer.addMenu(plant_menu, 'plant');
+    // }
 
-    async initUi() {
+    // async initUi() {
         
-        this.initGameUI();
-        this.initMainMenu();
-        this.initOptionsMenu();
-        this.initPlantEntryMenu();
-        this.initCollectionMenu();
+    //     this.initGameUI();
+    //     this.initMainMenu();
+    //     this.initOptionsMenu();
+    //     this.initPlantEntryMenu();
+    //     this.initCollectionMenu();
 
-    }
+    // }
 
     // loadResources() {
     //     this.plant_template_ids.forEach((template_id) => {
@@ -386,7 +387,7 @@ export default class Game {
             this.calculatePositions()
         })
         if(!this.first_init) {
-            await this.initUi();
+            await new UIInitializer(this).initUi();
             console.log('initializing ui')
             this.first_init = true;
         }
@@ -419,9 +420,6 @@ export default class Game {
                 throw new Error('Could not load image: ' + e.message)
             }
         }
-    }
-    getPlantImageID(plant_id: string, stage: number) {
-        throw new Error('Method not implemented.');
     }
 
     async initImages() {

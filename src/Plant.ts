@@ -149,10 +149,14 @@ export default class Plant extends GameObject {
             
             const image = cache.get(res_id);
 
+            //Plant data
+            const sprite = new Sprite(image);
+            const at_growth = template.stages[i].at_growth
+
             plant_stages.push(
                 {
-                    sprite: new Sprite(image),
-                    at_growth: i * 50
+                    sprite,
+                    at_growth
                 }
             )
         }
@@ -192,7 +196,9 @@ export default class Plant extends GameObject {
         var curr_stage_index = stage_indexes.reduce((a, i)=> {
             const prev_stage = this.stages[a];
             const curr_stage = this.stages[i];
-            if(curr_stage.at_growth > prev_stage.at_growth && this.growth > curr_stage.at_growth) {
+
+            let is_growth_in_curr_stage = curr_stage.at_growth > prev_stage.at_growth && this.growth > curr_stage.at_growth
+            if(is_growth_in_curr_stage) {
                 return i;
             } else {
                 return a;
@@ -205,7 +211,8 @@ export default class Plant extends GameObject {
     growBy(added_growth: number) {
         this.growth += added_growth;
         this.calculateCurrentStage();
-        if(this.growth >= this.maxGrowth() && this.fully_grown_cb && !this.fully_grown_called) {
+
+        if(this.isFullyGrown() && this.fully_grown_cb && !this.fully_grown_called) {
             this.fully_grown_cb(this);
             this.fully_grown_called = true;
         }

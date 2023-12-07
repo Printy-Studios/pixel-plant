@@ -1,4 +1,6 @@
+import constants from './const';
 import Game from './Game';
+import { ViewID } from './types/Misc';
 import { getTemplateMaxStageIndex } from './util';
 
 export default class UIInitializer {
@@ -18,23 +20,20 @@ export default class UIInitializer {
     initGameUI() {
         // Game UI
         
-        const water_button = this.createButton('water-button');
+        this.game.water_button = this.createButton('Water Plant', 'water-button');
         
-        water_button.innerHTML = 'Water Plant'
-        water_button.style.position = 'absolute'
-        water_button.style.top = '140px'
-        water_button.style.left = '50%';
-        water_button.style.transform = 'translateX(-50%)'
-        water_button.tabIndex = 4;
+        const water_button = this.game.water_button
+
+        // water_button.innerHTML = 'Water Plant'
+        // water_button.style.position = 'absolute'
+        // water_button.style.top = '140px'
+        // water_button.style.left = '50%';
+        // water_button.style.transform = 'translateX(-50%)'
+        // water_button.tabIndex = 4;
 
         //Back button
-        const back_button = this.createButton('button');
-        back_button.innerHTML = 'Back'
-        back_button.style.position = 'absolute'
-        back_button.style.top = '16px'
-        back_button.style.left = '16px'
-        back_button.tabIndex = 2
-        
+        const back_button = this.createLinkButton('Back', 'main', 'button-tl')
+
         //Progress message
         const progress_message_container = document.createElement('div')
         this.game.progress_message_container = progress_message_container
@@ -64,60 +63,32 @@ export default class UIInitializer {
             this.game.waterCurrentPlant()
         })
 
-        this.game.reset_button.addEventListener('click', () => {
-            const confirm_reset = confirm('Are you sure you want to reset the game? All data will be lost')
-            if(confirm_reset) {
-                this.game.resetData()
-            }
-            
-        })
-
-        back_button.addEventListener('click', () => {
-            this.game.renderer.showMenu('main')
-            this.game.setView(null)
-        })
-
         this.game.renderer.ui.appendChild(water_button);
         this.game.renderer.ui.appendChild(back_button);
         this.game.renderer.ui.appendChild(progress_message_container)
     }
 
+    
+
     initMainMenu() {
         //Main menu
 
         //Play button
-        const play_button = this.createButton('menu-button')
-        play_button.innerHTML = 'My Plant'
+        const play_button = this.createViewButton('My Plant', 'plant', 'menu-button', () => {
+            this.game.fastForwardBySeconds(this.game.getTimeAway())
+        });
 
         //Collection button
-        const collection_button = this.createButton('menu-button')
-        collection_button.innerHTML = 'Collection'
+        const collection_button = this.createLinkButton('Collection', 'collection', 'menu-button');
 
         //Options button
-        const options_button = this.createButton('menu-button')
-        options_button.innerHTML = 'Options'
+        const options_button = this.createLinkButton('Options', 'options', 'menu-button');
 
         this.game.main_menu = this.createMenu();
 
         this.game.main_menu.appendChild(play_button)
         this.game.main_menu.appendChild(collection_button)
         this.game.main_menu.appendChild(options_button)
-
-        // Event handlers
-
-        //Main menu
-        play_button.addEventListener('click', () => {
-            this.game.setView('plant')
-            this.game.fastForwardBySeconds(this.game.getTimeAway())
-        })
-
-        options_button.addEventListener('click', () => {
-            this.game.renderer.showMenu('options')
-        })
-
-        collection_button.addEventListener('click', () => {
-            this.game.renderer.showMenu('collection')
-        })
 
         this.game.renderer.addMenu(this.game.main_menu, 'main')
     }
@@ -127,8 +98,7 @@ export default class UIInitializer {
 
         const options_menu = this.createMenu();
 
-        const options_back = this.createButton('menu-button')
-        options_back.innerHTML = 'Back'
+        const options_back = this.createLinkButton('Back', 'menu', 'menu-button')
 
         const reset_button = this.createButton('menu-button')
         reset_button.innerHTML = 'Reset Game'
@@ -141,14 +111,8 @@ export default class UIInitializer {
 
         pace_selector_label.innerHTML = 'Pace: '
 
-        const paces = {
-            "4": 4,
-            "2": 2,
-            "1": 1,
-            "0.5": 0.5,
-            "0.25": 0.25
-        }
-        for (const pace_key in paces) {
+        
+        for (const pace_key in constants.paces) {
             const option = document.createElement('option')
             option.value = pace_key
             option.innerHTML = pace_key
@@ -175,10 +139,6 @@ export default class UIInitializer {
             this.game.saveData()
         })
 
-        options_back.addEventListener('click', () => {
-            this.game.renderer.showMenu('main')
-        })
-
         this.game.renderer.addMenu(options_menu, 'options')
     }
 
@@ -187,8 +147,7 @@ export default class UIInitializer {
 
         const collection_menu = this.createMenu()
 
-        const collection_back = this.createButton('menu-button')
-        collection_back.innerHTML = 'Back'
+        const collection_back = this.createLinkButton('Back', 'menu', 'menu-button');
 
         collection_menu.appendChild(collection_back)
 
@@ -232,12 +191,6 @@ export default class UIInitializer {
 
         }
 
-        // Collection menu
-
-        collection_back.addEventListener('click', () => {
-            this.game.renderer.showMenu('main')
-        })
-
         this.game.renderer.addMenu(collection_menu, 'collection')
     }
 
@@ -245,8 +198,7 @@ export default class UIInitializer {
         //Plant Entry
         const plant_menu = this.createMenu()
 
-        const plant_back = this.createButton('menu-button');
-        plant_back.innerHTML = 'Back';
+        const plant_back = this.createLinkButton('Back', 'collection', 'menu-button');
 
         this.game.plant_image.classList.add('collection-image');
 
@@ -258,12 +210,6 @@ export default class UIInitializer {
         plant_menu.appendChild(this.game.plant_name);
         plant_menu.appendChild(this.game.plant_description);
         plant_menu.appendChild(plant_button);
-
-        // Entry menu
-
-        plant_back.addEventListener('click', () => {
-            this.game.renderer.showMenu('main')
-        })
 
         plant_button.addEventListener('click', () => {
             this.game.plantNewPlant(this.game.current_plant_in_menu.plant_id);
@@ -282,9 +228,36 @@ export default class UIInitializer {
 
     }
 
-    createButton(class_name: string = null) {
+    createButton(text: string, class_name: string = null) {
         const btn = this.button.cloneNode() as HTMLDivElement
         btn.classList.add(class_name)
+        btn.innerHTML = text;
+        return btn;
+    }
+
+    createLinkButton(text = "", link_to: string = "", class_name: string = "", on_click: Function = null) {
+        const btn = this.createButton(text, class_name);
+
+        btn.addEventListener('click', () => {
+            this.game.renderer.showMenu(link_to)
+            if(on_click) {
+                on_click()
+            }
+        })
+
+        return btn;
+    }
+
+    createViewButton(text = "", link_to: ViewID, class_name: string = "", on_click: Function = null) {
+        const btn = this.createButton(text, class_name);
+
+        btn.addEventListener('click', () => {
+            this.game.setView(link_to)
+            if(on_click) {
+                on_click()
+            }
+        })
+
         return btn;
     }
 

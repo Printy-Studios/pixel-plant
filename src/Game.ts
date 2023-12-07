@@ -1,4 +1,5 @@
 import constants from './const';
+import ImageLoader from './ImageLoader';
 import MyCache from './MyCache';
 import MyStorage from './MyStorage';
 import Plant, { PlantData, PlantStage, PlantTemplate } from './Plant';
@@ -31,6 +32,9 @@ export default class Game {
     renderer = new Renderer('canvas', 'ui', 'menus');
     cache = new MyCache();
     storage = new MyStorage();
+
+    image_loader = new ImageLoader(this.cache);
+
     first_init: boolean = false; //Whether this the game has been initialized at least once
 
     seconds_per_tick: number;
@@ -40,8 +44,6 @@ export default class Game {
     delta_sum = 0;
 
     plant: Plant;
-
-    
 
     plant_templates: PlantTemplates = {}
 
@@ -98,15 +100,18 @@ export default class Game {
         await this.initImages();
         this.seconds_per_tick = 1 / this.data.pace
         window.addEventListener('resize', () => {
+            console.log('ddd')
             this.calculatePositions()
         })
         if(!this.first_init) {
-            await new UIInitializer(this).initUi();
+            const ui_init = new UIInitializer(this);
+            await ui_init.initUi();
             console.log('initializing ui')
             this.first_init = true;
         }
         
         await this.initPlants();
+        console.log('fff')
         this.calculatePositions();
 
         
@@ -115,32 +120,11 @@ export default class Game {
         //console.log(this.renderer.menu)
     }
 
-   
-
-    async loadTemplateImageIfNull(plant_id: string, stage: number) {
-        const res_id = getPlantImageID(plant_id, stage)
-        if(!this.cache.has(res_id)) {
-            try {
-                const img_url = './images/' + plant_id + '/' + plant_id + '_' + stage + '.png'
-                const img_res = await fetch(img_url);
-                const img_data = await img_res.blob();
-                const image = await createImageBitmap(img_data);
-                
-
-                const blob_id = getPlantImageBloblID(plant_id, stage)
-                this.cache.set(res_id, image);
-                this.cache.set(blob_id, img_data);
-            } catch(e) {
-                throw new Error('Could not load image: ' + e.message)
-            }
-        }
-    }
-
     async initImages() {
         for(const template_id in this.plant_templates) {
             const template = this.plant_templates[template_id]
             for(let i = 0; i < template.stages.length; i++) {
-                await this.loadTemplateImageIfNull(template.plant_id, i);
+                await this.image_loader.loadTemplateImageIfNull(template.plant_id, i);
             }
         }
         
@@ -308,7 +292,8 @@ export default class Game {
     calculatePositions() {
 
         this.plant.setPosition(getViewportCenter())
-
+        console.log('waterbtn')
+        console.log(this.water_button)
         this.water_button.style.top = this.plant.position.y * constants.scale + 160 + 'px'
     }
 

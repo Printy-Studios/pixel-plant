@@ -83,7 +83,13 @@ export default class Plant extends GameObject {
         super()
         this.id = id;
         Object.assign(this, options);
+        
+        this.initWaterLevelBar();
+        
+        this.setPosition(new Vector(window.innerWidth / 2 / constants.scale, window.innerHeight / 2 / constants.scale));
+    }
 
+    initWaterLevelBar() {
         const dividers = this.water_level.stages.map(stage => stage.to);
         dividers.pop();
 
@@ -101,10 +107,7 @@ export default class Plant extends GameObject {
                 dividers
             }
         )
-        
         this.water_level_bar.current = this.water_level.current
-        
-        this.setPosition(new Vector(window.innerWidth / 2 / constants.scale, window.innerHeight / 2 / constants.scale));
     }
 
     maxGrowth() {

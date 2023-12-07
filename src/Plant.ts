@@ -17,7 +17,30 @@ export type PlantStage = {
     at_growth: number
 }
 
+export type PlantData = {
+    id: PlantID,
+    plant_id: string,
+    name: string,
+    water_level_current: number,
+    growth: number,
+}
 
+export type PlantTemplate = {
+    plant_id: string,
+    name: string,
+    unlocks?: string,
+    water_level: {
+        decrease_rate: number,
+        stages: {
+            from: number,
+            to: number,
+            growth_rate: number   
+        }[]
+    },
+    stages: {
+        at_growth: number
+    }[]
+}
 
 export type PlantOptions = {
     plant_id: string,
@@ -26,15 +49,13 @@ export type PlantOptions = {
     current_stage?: number,
     stages: PlantStage[],
     growth?: number,
-    position?: Vector,
-    unlocks?: string,
+    position?: Vector
 }
 
 export default class Plant extends GameObject {
     id: string | number
     plant_id: string
     name: string
-    unlocks: string
 
     water_level: WaterLevel = new WaterLevel(
         0.5,
@@ -52,9 +73,6 @@ export default class Plant extends GameObject {
     growth: number = 0;
     position: Vector = new Vector(0, 0)
     size: Vector = new Vector(16, 32)
-
-    fully_grown_called: boolean;
-    fully_grown_cb: (plant: Plant) => void
 
     constructor(id: string | number, options: PlantOptions) {
         super()
@@ -98,16 +116,8 @@ export default class Plant extends GameObject {
             plant_id: this.plant_id,
             name: this.name,
             water_level_current: this.water_level.current,
-            growth: this.growth,
-            fully_grown_called: this.fully_grown_called
+            growth: this.growth
         }
-    }
-
-    onFullyGrown(callback: ( plant: Plant ) => void) {
-        if(!this.fully_grown_called) {
-            this.fully_grown_cb = callback;
-        }
-        this.fully_grown_called = true;
     }
 
     static async fromJSON(json: PlantData, cache: MyCache) {
@@ -115,7 +125,6 @@ export default class Plant extends GameObject {
         plant.name = json.name
         plant.water_level.set(json.water_level_current)
         plant.setGrowth(json.growth)
-        plant.fully_grown_called = json.fully_grown_called;
         return plant;
     }
 
@@ -170,8 +179,7 @@ export default class Plant extends GameObject {
             plant_id: template.plant_id,
             water_level,
             name: 'My Plant',
-            stages,
-            unlocks: template.unlocks
+            stages 
         }
         return new Plant(
             id,
@@ -197,9 +205,6 @@ export default class Plant extends GameObject {
     growBy(added_growth: number) {
         this.growth += added_growth;
         this.calculateCurrentStage();
-        if(this.growth >= this.maxGrowth() && this.fully_grown_cb) {
-            this.fully_grown_cb(this);
-        }
     }
 
     /**

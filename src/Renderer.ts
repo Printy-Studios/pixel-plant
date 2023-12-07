@@ -1,5 +1,5 @@
 import constants from './const';
-import Plant, { PlantTemplate } from './Plant';
+import Plant from './Plant';
 import ProgressBar from './ProgressBar';
 import Rect from './Rect';
 import Sprite from './Sprite';
@@ -30,8 +30,6 @@ export default class Renderer {
 
         this.ctx = this.canvas.getContext('2d');
         this.calculateCanvasSize();
-
-        
     }
 
     calculateCanvasSize() {
@@ -123,7 +121,6 @@ export default class Renderer {
         if(menu_id) {
             menu.id = menu_id + '-menu'
         }
-        menu.classList.add('menu');
         document.getElementById('menus').appendChild(menu);
         this.menus[menu_id] = menu;
     }

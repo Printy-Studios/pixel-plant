@@ -1,9 +1,6 @@
 body, html {
     margin: 0px;
-    flex-direction: column;
-    display: flex;
-    height: 100vh;
-    width: 100vw;
+    display: block;
 }
 
 #canvas {
@@ -31,10 +28,8 @@ body, html {
     gap: 8px;
     align-items: center;
     padding-block: 16px;
-    padding-inline: 16px;
     width: 100vw;
     height: 100vh;
-    box-sizing: border-box;
     overflow-y: scroll;
 }
 
@@ -131,8 +126,6 @@ body, html {
 
 .collection-image {
     /*max-width: 500px;*/
-    align-self: center;
-    /* height: auto; */
     image-rendering: pixelated;
     width: 100%;
 }

@@ -2,7 +2,6 @@
     "plant_id": "basic_plant",
     "unlocks": "yellow_dip",
     "name": "Flower of Joy",
-    "description": "This beautiful flower, when fully grown, radiates special waves that increase the motivation, productivity and well-being of the nearby individuals, from which it gets its fitting name",
     "water_level": {
         "decrease_rate": 4,
         "stages": [

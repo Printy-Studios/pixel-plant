@@ -1,11 +1,12 @@
 {
     "plant_id": "yellow_dip",
     "name": "Yellow Dip",
+    "description": "This completely yellow plant, appropriately named, is a plant that likes to grow in very sunny places. It's leaves are often used in herbal teas",
     "water_level": {
         "decrease_rate": 4,
         "stages": [
             {
-                "from": 10,
+                "from": 0,
                 "to": 40,
                 "growth_rate": 6
             },

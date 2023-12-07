@@ -2,16 +2,11 @@ import Renderer from './Renderer'
 import PlantTemplate, { PlantTemplates } from './PlantTemplate';
 import globals from './globals';
 import MyCache from './MyCache';
-import { ViewID } from './types/Misc';
-import SaveManager from './SaveManager';
-import PlantManager from './PlantManager';
+
 
 export default class UIManager {
 
     renderer: Renderer;
-
-    data: SaveManager;
-    plants: PlantManager
 
     current_view: ViewID | null = null;
 
@@ -26,13 +21,10 @@ export default class UIManager {
     plant_description: HTMLParagraphElement = document.createElement('p');
     current_plant_in_menu: PlantTemplate;
 
-    on_play: () => void
 
-    constructor(renderer: Renderer, data: SaveManager, plants: PlantManager) {
+    constructor(renderer: Renderer) {
         this.button.classList.add('button');
-        this.data = data;
         this.renderer = renderer;
-        this.plants = plants;
     }
 
     async init(plant_templates: PlantTemplates, cache: MyCache) {
@@ -212,8 +204,9 @@ export default class UIManager {
 
         //Main menu
         play_button.addEventListener('click', () => {
-            this.on_play();
-            
+            this.setView('plant')
+            const time_away = this.getTimeAway() 
+            this.fastForwardBySeconds(time_away)
         })
 
         options_button.addEventListener('click', () => {
@@ -227,9 +220,9 @@ export default class UIManager {
         //Options menu
 
         pace_selector_dropdown.addEventListener('change', (e: any) => {
-            globals.seconds_per_tick = 1 / parseFloat(e.target.value);
-            console.log(globals.seconds_per_tick);
-            this.data.saveData()
+            this.seconds_per_tick = 1 / parseFloat(e.target.value);
+            console.log(this.seconds_per_tick);
+            this.saveData()
         })
 
         options_back.addEventListener('click', () => {
@@ -249,7 +242,7 @@ export default class UIManager {
         })
 
         plant_button.addEventListener('click', () => {
-            this.plants.plantNewPlant(this.current_plant_in_menu.plant_id);
+            this.plantNewPlant(this.current_plant_in_menu.plant_id);
         })
 
         //Game UI
@@ -294,19 +287,6 @@ export default class UIManager {
 
        
     }
-
-    /**
-     * If you want to indicate that the plant has fully grown, pass 'true' for `growth_percentage`
-     */
-     progressMessageText(time: {h: number, m: number}, growth_percentage: number | boolean) {
-        const away_str = time.h > 0 && time.m > 0 ? 'You were away for' : '';
-        const hrs_str = time.h == 1 ? '1 hour' : time.h > 0 ? time.h + ' hours' : ''
-        const mins_str =  time.m == 1 ? '1 minute' : time.m > 0 ? time.m + ' minutes' : ''
-        const and_str = time.h > 0 && time.m > 0 ? 'and' : ''
-
-        const growth_str = typeof growth_percentage === 'boolean' ? 'fully grown' : 'grown by ' + growth_percentage + ' %'
-        return `${away_str} ${hrs_str} ${and_str} ${mins_str} ${and_str} your plant has ${growth_str}`
-    }   
 
     displayProgressMessage(message: string, show_plant_button: boolean = false,) {
         if(show_plant_button) {

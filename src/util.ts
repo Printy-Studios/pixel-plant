@@ -1,5 +1,3 @@
-import globals from './globals';
-
 export function rangeOverlap(x1: number, x2: number, y1: number, y2: number) {
     return Math.max(0, Math.min (x2, y2) - Math.max (x1, y1) + 1);
 }
@@ -19,8 +17,4 @@ export function secondsToTime(secs: number) {
         "s": seconds
     };
     return obj;
-}
-
-export function getTicksBySeconds(seconds: number) {
-    return seconds / globals.seconds_per_tick
 }

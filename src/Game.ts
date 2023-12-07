@@ -9,6 +9,9 @@ import Renderer from './Renderer';
 import UIManager from './UIManager';
 import { secondsToTime } from './util';
 import Vector from './Vector';
+import globals from './globals';
+import PlantManager from './PlantManager';
+import SaveManager from './SaveManager';
 
 
 
@@ -25,7 +28,12 @@ export default class Game {
     renderer = new Renderer('canvas', 'ui', 'menus');
     cache = new MyCache();
     storage = new MyStorage();
-    ui = new UIManager(this.renderer);
+
+    ui: UIManager
+    plants: PlantManager
+    data: SaveManager
+    
+
     first_init: boolean = false; //Whether this the game has been initialized at least once
 
     seconds_per_tick: number;
@@ -34,20 +42,15 @@ export default class Game {
     delta = 0;
     delta_sum = 0;
 
-    plant: Plant;
+    
 
     
 
-    plant_templates: PlantTemplates = {}
+    
 
-    plant_template_ids: string[] = [
-        "basic_plant",
-        "yellow_dip"
-    ]
+    //plants: Plants = {}
 
-    plants: Plants = {}
-
-    data: SaveData;
+    //data: SaveData;
 
     loading: boolean = true;
 
@@ -62,6 +65,9 @@ export default class Game {
     recently_unlocked: string;
 
     constructor() {
+        this.ui = new UIManager(this.renderer, this.data, this.plants);
+        this.plants = new PlantManager(this.ui);
+        this.data = new SaveManager(this.cache, this.storage, this.plants);
         // this.button.classList.add('button')
     }
 
@@ -76,23 +82,25 @@ export default class Game {
     async init() {
         this.setLoading(true)
         if(!this.storage.has('data')) {
-            await this.setDataToDefaults();
+            await this.data.setDataToDefaults();
         } else {
             this.data = this.getData();
         }
         await this.initTemplates();
         await this.initImages();
-        this.seconds_per_tick = 1 / this.data.pace
+        this.seconds_per_tick = 1 / globals.data.pace
         window.addEventListener('resize', () => {
             this.calculatePositions()
         })
         if(!this.first_init) {
-            await this.ui.init(this.plant_templates, this.cache);
+            await this.ui.init(this.plants.plant_templates, this.cache);
             console.log('initializing ui')
             this.first_init = true;
         }
         
-        await this.initPlants();
+        await this.plants.init(this.cache);
+        this.plants.on_plant = this.onPlantPlanted;
+        this.plants.on_plant_grown = this.onPlantFullyGrown;
         this.calculatePositions();
 
         
@@ -102,8 +110,8 @@ export default class Game {
     }
 
     async initImages() {
-        for(const template_id in this.plant_templates) {
-            const template = this.plant_templates[template_id]
+        for(const template_id in this.plants.plant_templates) {
+            const template = this.plants.plant_templates[template_id]
             for(let i = 0; i < template.stages.length; i++) {
                 const res_id = 'images/' + template.plant_id + '/' + i;
                 if(!this.cache.has(res_id)) {
@@ -128,40 +136,33 @@ export default class Game {
     }
 
     initUI() {
-        
+        this.ui.on_play = () => {
+            this.ui.setView('plant')
+            const time_away = this.getTimeAway() 
+            this.plants.fastForwardBySeconds(time_away)
+        }
     }
 
-    async initPlants() {
-
-        //let difference_s = this.getTimeAway()
-
-        // this.plants = {};
-
-        // for(let i = 0; i < this.data.plants.length; i++) {
-        //     const plant = await Plant.fromJSON(this.data.plants[i], this.cache)
-        //     this.createPlant(plant)
-        // }
-        const plant = await Plant.fromJSON(this.data.plant, this.cache)
-        this.createPlant(plant);
-        //this.fastForwardBySeconds(difference_s)
-
-        this.setPlant(Object.values(this.plants)[0] as Plant);
-    }
+    
 
     async initTemplates() {
-        for(const template_id of this.plant_template_ids) {
+        for(const template_id of this.plants.plant_template_ids) {
             const res = await fetch('plant_templates/' + template_id + '.json')
             const json = await res.json()
-            this.plant_templates[template_id] = json;
+            this.plants.plant_templates[template_id] = json;
         }
+    }
+
+    onPlantPlanted() {
+        this.ui.setView('plant');
     }
 
     onPlantFullyGrown(plant: Plant) {
         console.log('plant fully grown')
-        let message = this.progressMessageText({ h: 0, m: 0}, true)
+        let message = this.ui.progressMessageText({ h: 0, m: 0}, true)
 
         let show_plant_button = false;
-        const unlock = this.getTemplateUnlock(this.plant.plant_id);
+        const unlock = this.plants.getTemplateUnlock(this.plants.plant.plant_id);
 
         if (unlock) {
             message += '<br><b>You have unlocked a new plant - ' + unlock.name + '. Would you like to plant it?';
@@ -172,108 +173,24 @@ export default class Game {
         if(this.ui.progress_message.style.display != 'none') {
             this.ui.displayProgressMessage(message, show_plant_button)
         }
-        this.data.unlocked_plants.push(plant.unlocks);
-        this.saveData();
+        globals.data.unlocked_plants.push(plant.unlocks);
+        this.data.saveData();
     }
 
-    fastForwardBySeconds(seconds: number) {
-        if(!seconds) {
-            return;
-        }
-        const growth_before = this.plant.growth;
-
-        const ticks = this.getTicksBySeconds(seconds)
-        for(const plant_key in this.plants) {
-            this.plants[plant_key].fastForward(ticks)
-        }
-
-        const growth_after =  this.plant.growth;
-        
-
-        const time = secondsToTime(seconds);
-        console.log(time)
-        if(time.m > 0) {
-            const growth_difference = growth_after - growth_before;
-            let growth_percent: number | boolean = growth_difference / this.plant.maxGrowth() * 100
-
-            if(this.plant.isFullyGrown()) {
-                growth_percent = true;
-            }
-
-            
-            let message = this.progressMessageText(time, growth_percent)
-
-            let show_plant_button = false;
-            const unlock = this.getTemplateUnlock(this.plant.plant_id);
-
-            if (this.plant.isFullyGrown() && unlock) {
-                message += '<br><b>You have unlocked a new plant - ' + unlock.name + '. Would you like to plant it?';
-                show_plant_button = true;
-            }
-
-            this.ui.displayProgressMessage(message, show_plant_button);
-        }
-        
-    }
+     
 
     
 
-    /**
-     * If you want to indicate that the plant has fully grown, pass 'true' for `growth_percentage`
-     */
-    progressMessageText(time: {h: number, m: number}, growth_percentage: number | boolean) {
-        const away_str = time.h > 0 && time.m > 0 ? 'You were away for' : '';
-        const hrs_str = time.h == 1 ? '1 hour' : time.h > 0 ? time.h + ' hours' : ''
-        const mins_str =  time.m == 1 ? '1 minute' : time.m > 0 ? time.m + ' minutes' : ''
-        const and_str = time.h > 0 && time.m > 0 ? 'and' : ''
-
-        const growth_str = typeof growth_percentage === 'boolean' ? 'fully grown' : 'grown by ' + growth_percentage + ' %'
-        return `${away_str} ${hrs_str} ${and_str} ${mins_str} ${and_str} your plant has ${growth_str}`
-    }
-
-    getTicksBySeconds(seconds: number) {
-        return seconds / this.seconds_per_tick
-    }
-
-    saveData(data: SaveData = null) {
-
-        //If custom data object was passed, save that
-        if(data) {
-            this.storage.set('data', data)
-            return;
-        }
-        //Otherwise get current plants and save them
-        this.data.pace = 1 / this.seconds_per_tick;
-        this.data.plant = this.plant.toJSON();
-        this.data.leave_time = new Date().getTime();
-        this.storage.set('data', this.data);
-    }
-
     
-
-    getTemplateUnlock(template_id: string) {
-        const unlock_id = this.plant_templates[template_id].unlocks;
-        return this.plant_templates[unlock_id]
-    }
-
-    async setDataToDefaults() {
-        const basic_plant = await Plant.fromTemplate(0, 'basic_plant', this.cache);
-
-        
-        this.data = {
-            pace: 1,
-            max_id: 1,
-            leave_time: null,
-            unlocked_plants: ["basic_plant"],
-            plant: basic_plant.toJSON()
-        }
-
-        this.saveData(this.data);
-    }
 
     async resetData() {
-        await this.setDataToDefaults();
+        await this.data.setDataToDefaults();
         await this.init();
+    }
+
+    getTimeAway() {
+        let current_time_ms = new Date().getTime();
+        return globals.data.leave_time ? (current_time_ms - globals.data.leave_time) / 1000 : null;
     }
 
     getData() {
@@ -286,12 +203,12 @@ export default class Game {
     
 
     calculatePositions() {
-        this.plant.setPosition(new Vector(
+        this.plants.get().setPosition(new Vector(
             window.innerWidth / 2 / constants.scale,
             window.innerHeight / 2 / constants.scale
         ))
 
-        this.water_button.style.top = this.plant.position.y * constants.scale + 160 + 'px'
+        this.water_button.style.top = this.plants.get().position.y * constants.scale + 160 + 'px'
     }
 
     getPlantTemplateFullyGrownImageURL(plant_template: PlantTemplate) {
@@ -322,21 +239,21 @@ export default class Game {
     }
 
     tick() {
-        this.saveData();
-        console.log(this.plant)
-        this.plant.tick();
+        this.data.saveData();
+        console.log(this.plants.get())
+        this.plants.get().tick();
     }
 
     draw() {
         this.renderer.clear();
         if(!this.loading && !this.renderer.menu && this.ui.current_view == 'plant') {
-            this.renderer.drawPlant(this.plant);
+            this.renderer.drawPlant(this.plants.get());
         }
     }
 
     waterCurrentPlant() {
-        this.plant.water_level.top();
-        this.plant.updateWaterLevelBar()
+        this.plants.get().water_level.top();
+        this.plants.get().updateWaterLevelBar()
     }
 
     gameLoop() {
@@ -355,22 +272,10 @@ export default class Game {
         window.requestAnimationFrame(this.gameLoop.bind(this))
     }
 
-    createPlant(plant: Plant) {
-        this.plants[plant.id] = plant;
-    }
+    
 
     
 
-    async plantNewPlant(template_id: string) {
-        console.log('planting')
-        const plant = await Plant.fromTemplate('my_plant', template_id, this.cache);
-        this.setPlant(plant);
-        this.ui.setView('plant');
-    }
-
-    setPlant(plant: Plant) {
-        this.plant = plant;
-        this.plant.onFullyGrown(this.onPlantFullyGrown.bind(this));
-    }
+    
 
 }

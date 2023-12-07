@@ -15,10 +15,6 @@ const globals: Globals = {
         unlocked_plants: ['basic_plant'],
         plant: null,
         leave_time: null
-    },
-    getTimeAway: () => {
-        let current_time_ms = new Date().getTime();
-        return globals.data.leave_time ? (current_time_ms - globals.data.leave_time) / 1000 : null;
     }
 }
 

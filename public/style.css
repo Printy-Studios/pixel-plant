@@ -30,12 +30,17 @@ body, html {
     flex-direction: column;
     gap: 8px;
     align-items: center;
+    justify-content: center;
     padding-block: 16px;
     padding-inline: 16px;
     width: 100vw;
     height: 100vh;
     box-sizing: border-box;
     overflow-y: scroll;
+}
+
+#plant-menu {
+    justify-content: normal;
 }
 
 .button {

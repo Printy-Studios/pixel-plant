@@ -41,6 +41,7 @@ export default class Game {
     plant: Plant;
 
     button: HTMLButtonElement = document.createElement('button');
+    menu: HTMLDivElement = document.createElement('div');
 
     plant_templates: PlantTemplates = {}
 
@@ -78,6 +79,8 @@ export default class Game {
 
     constructor() {
         this.button.classList.add('button')
+        this.menu.classList.add('menu');
+
     }
 
     createButton(class_name: string = null) {
@@ -86,7 +89,13 @@ export default class Game {
         return btn;
     }
 
-    async initUi() {
+    createMenu(class_name: string = null) {
+        const menu = this.menu.cloneNode() as HTMLDivElement;
+        menu.classList.add(class_name)
+        return menu;
+    }
+
+    initGameUI() {
         // Game UI
         this.water_button = this.button.cloneNode() as HTMLDivElement
         this.reset_button = this.button.cloneNode() as HTMLDivElement
@@ -126,8 +135,37 @@ export default class Game {
         progress_message_container.appendChild(progress_message);
         progress_message_container.appendChild(this.progress_message_plant)
 
-        
+        this.progress_message_plant.addEventListener('click', () => {
+            this.plantNewPlant(this.recently_unlocked)
+        })
 
+        progress_message_container.addEventListener('focusout', () => {
+            progress_message_container.style.display = 'none'
+        })
+
+        water_button.addEventListener('click', () => {
+            this.waterCurrentPlant()
+        })
+
+        this.reset_button.addEventListener('click', () => {
+            const confirm_reset = confirm('Are you sure you want to reset the game? All data will be lost')
+            if(confirm_reset) {
+                this.resetData()
+            }
+            
+        })
+
+        back_button.addEventListener('click', () => {
+            this.renderer.showMenu('main')
+            this.setView(null)
+        })
+
+        this.renderer.ui.appendChild(water_button);
+        this.renderer.ui.appendChild(back_button);
+        this.renderer.ui.appendChild(progress_message_container)
+    }
+
+    initMainMenu() {
         //Main menu
 
         //Play button
@@ -142,22 +180,36 @@ export default class Game {
         const options_button = this.createButton('menu-button')
         options_button.innerHTML = 'Options'
 
-        this.main_menu = document.createElement('div')
-        this.main_menu.classList.add('menu')
-        this.main_menu.style.alignItems = 'center'
-        this.main_menu.style.justifyContent = 'center'
-        this.main_menu.id = 'main'
+        this.main_menu = this.createMenu();
 
         this.main_menu.appendChild(play_button)
         this.main_menu.appendChild(collection_button)
         this.main_menu.appendChild(options_button)
 
-        
+        // Event handlers
 
+        //Main menu
+        play_button.addEventListener('click', () => {
+            this.setView('plant')
+            const time_away = this.getTimeAway() 
+            this.fastForwardBySeconds(time_away)
+        })
+
+        options_button.addEventListener('click', () => {
+            this.renderer.showMenu('options')
+        })
+
+        collection_button.addEventListener('click', () => {
+            this.renderer.showMenu('collection')
+        })
+
+        this.renderer.addMenu(this.main_menu, 'main')
+    }
+
+    initOptionsMenu() {
         //Options menu
 
-        const options_menu = document.createElement('div')
-        options_menu.classList.add('menu')
+        const options_menu = this.createMenu();
 
         const options_back = this.createButton('menu-button')
         options_back.innerHTML = 'Back'
@@ -199,11 +251,26 @@ export default class Game {
         options_menu.appendChild(pace_selector)
         options_menu.appendChild(options_back)
         options_menu.appendChild(reset_button)
-        
+
+        //Options menu
+
+        pace_selector_dropdown.addEventListener('change', (e: any) => {
+            this.seconds_per_tick = 1 / parseFloat(e.target.value);
+            console.log(this.seconds_per_tick);
+            this.saveData()
+        })
+
+        options_back.addEventListener('click', () => {
+            this.renderer.showMenu('main')
+        })
+
+        this.renderer.addMenu(options_menu, 'options')
+    }
+
+    initCollectionMenu() {
         // Collection menu
 
-        const collection_menu = document.createElement('div')
-        collection_menu.classList.add('menu')
+        const collection_menu = this.createMenu()
 
         const collection_back = this.createButton('menu-button')
         collection_back.innerHTML = 'Back'
@@ -249,9 +316,18 @@ export default class Game {
 
         }
 
+        // Collection menu
 
+        collection_back.addEventListener('click', () => {
+            this.renderer.showMenu('main')
+        })
+
+        this.renderer.addMenu(collection_menu, 'collection')
+    }
+
+    initPlantEntryMenu() {
         //Plant Entry
-        const plant_menu = document.createElement('div');
+        const plant_menu = this.createMenu()
 
         const plant_back = this.createButton('menu-button');
         plant_back.innerHTML = 'Back';
@@ -267,44 +343,6 @@ export default class Game {
         plant_menu.appendChild(this.plant_description);
         plant_menu.appendChild(plant_button);
 
-        
-
-
-        // Event handlers
-
-        //Main menu
-        play_button.addEventListener('click', () => {
-            this.setView('plant')
-            const time_away = this.getTimeAway() 
-            this.fastForwardBySeconds(time_away)
-        })
-
-        options_button.addEventListener('click', () => {
-            this.renderer.showMenu('options')
-        })
-
-        collection_button.addEventListener('click', () => {
-            this.renderer.showMenu('collection')
-        })
-
-        //Options menu
-
-        pace_selector_dropdown.addEventListener('change', (e: any) => {
-            this.seconds_per_tick = 1 / parseFloat(e.target.value);
-            console.log(this.seconds_per_tick);
-            this.saveData()
-        })
-
-        options_back.addEventListener('click', () => {
-            this.renderer.showMenu('main')
-        })
-
-        // Collection menu
-
-        collection_back.addEventListener('click', () => {
-            this.renderer.showMenu('main')
-        })
-
         // Entry menu
 
         plant_back.addEventListener('click', () => {
@@ -315,47 +353,17 @@ export default class Game {
             this.plantNewPlant(this.current_plant_in_menu.plant_id);
         })
 
-        //Game UI
-
-        this.progress_message_plant.addEventListener('click', () => {
-            this.plantNewPlant(this.recently_unlocked)
-        })
-
-        progress_message_container.addEventListener('focusout', () => {
-            progress_message_container.style.display = 'none'
-        })
-
-        water_button.addEventListener('click', () => {
-            this.waterCurrentPlant()
-        })
-
-        reset_button.addEventListener('click', () => {
-            const confirm_reset = confirm('Are you sure you want to reset the game? All data will be lost')
-            if(confirm_reset) {
-                this.resetData()
-            }
-            
-        })
-
-        back_button.addEventListener('click', () => {
-            this.renderer.showMenu('main')
-            this.setView(null)
-        })
-
-        
-
-        this.renderer.addMenu(this.main_menu, 'main')
-        this.renderer.addMenu(options_menu, 'options')
-        this.renderer.addMenu(collection_menu, 'collection')
         this.renderer.addMenu(plant_menu, 'plant');
+    }
 
-        this.renderer.ui.appendChild(water_button);
-        this.renderer.ui.appendChild(back_button);
-        this.renderer.ui.appendChild(progress_message_container)
+    async initUi() {
         
-        //this.renderer.ui.appendChild(reset_button)
+        this.initGameUI();
+        this.initMainMenu();
+        this.initOptionsMenu();
+        this.initPlantEntryMenu();
+        this.initCollectionMenu();
 
-       
     }
 
     // loadResources() {
@@ -364,13 +372,17 @@ export default class Game {
     //     })
     // }
 
-    async init() {
-        this.setLoading(true)
+    async setDataIfNull() {
         if(!this.storage.has('data')) {
             await this.setDataToDefaults();
         } else {
             this.data = this.getData();
         }
+    }
+
+    async init() {
+        this.setLoading(true)
+        await this.setDataIfNull();
         await this.initTemplates();
         await this.initImages();
         this.seconds_per_tick = 1 / this.data.pace
@@ -392,46 +404,40 @@ export default class Game {
         //console.log(this.renderer.menu)
     }
 
+    async loadTemplateImageIfNull(plant_id: string, stage: number) {
+        const res_id = 'images/' + plant_id + '/' + stage;
+        if(!this.cache.has(res_id)) {
+            try {
+                const img_url = './images/' + plant_id + '/' + plant_id + '_' + stage + '.png'
+                console.log(img_url)
+                const img_res = await fetch(img_url);
+                const img_data = await img_res.blob();
+                const image = await createImageBitmap(img_data);
+                
+
+                const blob_id = 'image_blobs/' + plant_id + '/' + stage;
+                console.log('creating blob ' + blob_id)
+                this.cache.set(res_id, image);
+                this.cache.set(blob_id, img_data);
+            } catch(e) {
+                throw new Error('Could not load image: ' + e.message)
+            }
+        }
+    }
+
     async initImages() {
         for(const template_id in this.plant_templates) {
             const template = this.plant_templates[template_id]
             for(let i = 0; i < template.stages.length; i++) {
-                const res_id = 'images/' + template.plant_id + '/' + i;
-                if(!this.cache.has(res_id)) {
-                    try {
-                        const img_url = './images/' + template.plant_id + '/' + template.plant_id + '_' + i + '.png'
-                        console.log(img_url)
-                        const img_res = await fetch(img_url);
-                        const img_data = await img_res.blob();
-                        const image = await createImageBitmap(img_data);
-                        
-    
-                        const blob_id = 'image_blobs/' + template.plant_id + '/' + i;
-                        this.cache.set(res_id, image);
-                        this.cache.set(blob_id, img_data);
-                    } catch(e) {
-                        throw new Error('Could not load image: ' + e.message)
-                    }
-                }
+                await this.loadTemplateImageIfNull(template.plant_id, i);
             }
         }
         
     }
 
     async initPlants() {
-
-        let difference_s = this.getTimeAway()
-
-        // this.plants = {};
-
-        // for(let i = 0; i < this.data.plants.length; i++) {
-        //     const plant = await Plant.fromJSON(this.data.plants[i], this.cache)
-        //     this.createPlant(plant)
-        // }
         const plant = await Plant.fromJSON(this.data.plant, this.cache)
         this.createPlant(plant);
-        //this.fastForwardBySeconds(difference_s)
-
         this.setPlant(Object.values(this.plants)[0] as Plant);
     }
 

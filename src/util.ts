@@ -1,4 +1,7 @@
+import constants from './const';
 import { PlantTemplate } from './Plant';
+import Vector from './Vector';
+
 
 export function rangeOverlap(x1: number, x2: number, y1: number, y2: number) {
     return Math.max(0, Math.min (x2, y2) - Math.max (x1, y1) + 1);
@@ -23,4 +26,23 @@ export function secondsToTime(secs: number) {
 
 export function getTemplateMaxStageIndex(template: PlantTemplate) {
     return template.stages.length - 1;
+}
+
+export function getViewportCenter() {
+    return new Vector(
+        window.innerWidth / 2 / constants.scale,
+        window.innerHeight / 2 / constants.scale
+    )
+}
+
+export function getPlantImageID(plant_id: string, stage: number) {
+    return 'images/' + plant_id + '/' + stage;
+}
+
+export function getPlantImageBloblID(plant_id: string, stage: number) {
+    return 'image_blobs/' + plant_id + '/' + stage;
+}
+
+export function getTemplateResourceID(template_id:string) {
+    return 'templates/' + template_id
 }

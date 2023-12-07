@@ -4,7 +4,7 @@ import ProgressBar from './ProgressBar';
 import Sprite from './Sprite';
 import WaterLevel from './WaterLevel'
 import Rect from './Rect';
-import { rangeOverlap } from './util';
+import { getPlantImageID, getTemplateResourceID, getViewportCenter, rangeOverlap } from './util';
 import MyCache from './MyCache';
 import constants from './const';
 
@@ -86,9 +86,7 @@ export default class Plant extends GameObject {
         
         this.initWaterLevelBar();
         
-        let pos_x = window.innerWidth / 2 / constants.scale;
-        let pos_y = window.innerHeight / 2 / constants.scale
-        this.setPosition(new Vector(pos_x, pos_y));
+        this.setPosition(getViewportCenter());
     }
 
     initWaterLevelBar() {
@@ -147,7 +145,7 @@ export default class Plant extends GameObject {
     static async stagesFromTemplate(template: PlantTemplate, cache: MyCache) {
         const plant_stages: PlantStage[] = []
         for(let i = 0; i < template.stages.length; i++) {
-            const res_id = 'images/' + template.plant_id + '/' + i;
+            const res_id = getPlantImageID(template.plant_id, i)
             
             const image = cache.get(res_id);
 
@@ -168,7 +166,7 @@ export default class Plant extends GameObject {
 
     static async fromTemplate(id: string | number, template_id: string, cache: MyCache) {
 
-        const res_id = 'templates/' + template_id
+        const res_id = getTemplateResourceID(template_id);
 
         if(!cache.has(res_id)) {
             const template_res = await fetch('./plant_templates/' + template_id + '.json');

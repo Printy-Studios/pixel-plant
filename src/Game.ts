@@ -4,7 +4,7 @@ import MyStorage from './MyStorage';
 import Plant, { PlantData, PlantStage, PlantTemplate } from './Plant';
 import BasicPlant from './plants/BasicPlant';
 import Renderer from './Renderer';
-import { getTemplateMaxStageIndex, secondsToTime } from './util';
+import { getPlantImageBloblID, getPlantImageID, getTemplateMaxStageIndex, getViewportCenter, secondsToTime } from './util';
 import Vector from './Vector';
 
 type PlantTemplates = {
@@ -400,8 +400,10 @@ export default class Game {
         //console.log(this.renderer.menu)
     }
 
+   
+
     async loadTemplateImageIfNull(plant_id: string, stage: number) {
-        const res_id = 'images/' + plant_id + '/' + stage;
+        const res_id = getPlantImageID(plant_id, stage)
         if(!this.cache.has(res_id)) {
             try {
                 const img_url = './images/' + plant_id + '/' + plant_id + '_' + stage + '.png'
@@ -410,13 +412,16 @@ export default class Game {
                 const image = await createImageBitmap(img_data);
                 
 
-                const blob_id = 'image_blobs/' + plant_id + '/' + stage;
+                const blob_id = getPlantImageBloblID(plant_id, stage)
                 this.cache.set(res_id, image);
                 this.cache.set(blob_id, img_data);
             } catch(e) {
                 throw new Error('Could not load image: ' + e.message)
             }
         }
+    }
+    getPlantImageID(plant_id: string, stage: number) {
+        throw new Error('Method not implemented.');
     }
 
     async initImages() {
@@ -460,7 +465,7 @@ export default class Game {
             this.plants[plant_key].fastForward(ticks)
         }
 
-        const growth_after =  this.plant.growth;
+        const growth_after = this.plant.growth;
         
         this.displayProgressMessage(true, growth_before, growth_after, seconds)
         
@@ -586,12 +591,11 @@ export default class Game {
         return this.data.leave_time ? (time_difference_ms) / 1000 : null;
     }
 
+    
+
     calculatePositions() {
 
-        let plant_x = window.innerWidth / 2 / constants.scale
-        let plant_y = window.innerHeight / 2 / constants.scale
-
-        this.plant.setPosition(new Vector(plant_x, plant_y))
+        this.plant.setPosition(getViewportCenter())
 
         this.water_button.style.top = this.plant.position.y * constants.scale + 160 + 'px'
     }

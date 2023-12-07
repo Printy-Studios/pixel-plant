@@ -5,14 +5,20 @@ export default class UIInitializer {
 
     game: Game;
 
+    button: HTMLButtonElement = document.createElement('button');
+    menu: HTMLDivElement = document.createElement('div');
+
     constructor(game: Game) {
         this.game = game;
+
+        this.button.classList.add('button')
+        this.menu.classList.add('menu');
     }
 
     initGameUI() {
         // Game UI
         
-        const water_button = this.game.createButton('water-button');
+        const water_button = this.createButton('water-button');
         
         water_button.innerHTML = 'Water Plant'
         water_button.style.position = 'absolute'
@@ -22,7 +28,7 @@ export default class UIInitializer {
         water_button.tabIndex = 4;
 
         //Back button
-        const back_button = this.game.createButton('button');
+        const back_button = this.createButton('button');
         back_button.innerHTML = 'Back'
         back_button.style.position = 'absolute'
         back_button.style.top = '16px'
@@ -39,7 +45,7 @@ export default class UIInitializer {
         const progress_message = this.game.progress_message;
         progress_message.innerHTML = 'You were away for n hours n minutes and your plant has grown by x %'
 
-        this.game.progress_message_plant = this.game.createButton('menu-button')
+        this.game.progress_message_plant = this.createButton('menu-button')
         this.game.progress_message_plant.classList.add('small-button')
         this.game.progress_message_plant.innerHTML = 'Plant'
 
@@ -80,18 +86,18 @@ export default class UIInitializer {
         //Main menu
 
         //Play button
-        const play_button = this.game.createButton('menu-button')
+        const play_button = this.createButton('menu-button')
         play_button.innerHTML = 'My Plant'
 
         //Collection button
-        const collection_button = this.game.createButton('menu-button')
+        const collection_button = this.createButton('menu-button')
         collection_button.innerHTML = 'Collection'
 
         //Options button
-        const options_button = this.game.createButton('menu-button')
+        const options_button = this.createButton('menu-button')
         options_button.innerHTML = 'Options'
 
-        this.game.main_menu = this.game.createMenu();
+        this.game.main_menu = this.createMenu();
 
         this.game.main_menu.appendChild(play_button)
         this.game.main_menu.appendChild(collection_button)
@@ -119,12 +125,12 @@ export default class UIInitializer {
     initOptionsMenu() {
         //Options menu
 
-        const options_menu = this.game.createMenu();
+        const options_menu = this.createMenu();
 
-        const options_back = this.game.createButton('menu-button')
+        const options_back = this.createButton('menu-button')
         options_back.innerHTML = 'Back'
 
-        const reset_button = this.game.createButton('menu-button')
+        const reset_button = this.createButton('menu-button')
         reset_button.innerHTML = 'Reset Game'
 
         const pace_selector = document.createElement('div')
@@ -179,15 +185,15 @@ export default class UIInitializer {
     initCollectionMenu() {
         // Collection menu
 
-        const collection_menu = this.game.createMenu()
+        const collection_menu = this.createMenu()
 
-        const collection_back = this.game.createButton('menu-button')
+        const collection_back = this.createButton('menu-button')
         collection_back.innerHTML = 'Back'
 
         collection_menu.appendChild(collection_back)
 
         for(const template_id in this.game.plant_templates) {
-            const plant_button = this.game.createButton('menu-button');
+            const plant_button = this.createButton('menu-button');
             plant_button.classList.add('plant-button')
             // const plant = await Plant.fromTemplate(template_id, template_id, this.cache)
             const plant_template = this.game.plant_templates[template_id]
@@ -237,14 +243,14 @@ export default class UIInitializer {
 
     initPlantEntryMenu() {
         //Plant Entry
-        const plant_menu = this.game.createMenu()
+        const plant_menu = this.createMenu()
 
-        const plant_back = this.game.createButton('menu-button');
+        const plant_back = this.createButton('menu-button');
         plant_back.innerHTML = 'Back';
 
         this.game.plant_image.classList.add('collection-image');
 
-        const plant_button = this.game.createButton('menu-button');
+        const plant_button = this.createButton('menu-button');
         plant_button.innerHTML = 'Plant';
 
         plant_menu.appendChild(plant_back);
@@ -274,5 +280,17 @@ export default class UIInitializer {
         this.initPlantEntryMenu();
         this.initCollectionMenu();
 
+    }
+
+    createButton(class_name: string = null) {
+        const btn = this.button.cloneNode() as HTMLDivElement
+        btn.classList.add(class_name)
+        return btn;
+    }
+
+    createMenu(class_name: string = null) {
+        const menu = this.menu.cloneNode() as HTMLDivElement;
+        menu.classList.add(class_name)
+        return menu;
     }
 }

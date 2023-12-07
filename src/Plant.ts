@@ -127,10 +127,7 @@ export default class Plant extends GameObject {
     }
 
     onFullyGrown(callback: ( plant: Plant ) => void) {
-        if(!this.fully_grown_called) {
-            this.fully_grown_cb = callback;
-        }
-        this.fully_grown_called = true;
+        this.fully_grown_cb = callback;
     }
 
     static async fromJSON(json: PlantData, cache: MyCache) {
@@ -146,21 +143,6 @@ export default class Plant extends GameObject {
         const plant_stages: PlantStage[] = []
         for(let i = 0; i < template.stages.length; i++) {
             const res_id = 'images/' + template.plant_id + '/' + i;
-            if(!cache.has(res_id)) {
-                try {
-                    const img_url = './images/' + template.plant_id + '/' + template.plant_id + '_' + i + '.png'
-                    const img_res = await fetch(img_url);
-                    const img_data = await img_res.blob();
-                    const image = await createImageBitmap(img_data);
-                    
-
-                    const blob_id = 'image_blobs/' + template.plant_id + '/' + i;
-                    cache.set(res_id, image);
-                    cache.set(blob_id, img_data);
-                } catch(e) {
-                    throw new Error('Could not load image: ' + e.message)
-                }
-            }
             
             const image = cache.get(res_id);
 
@@ -220,8 +202,9 @@ export default class Plant extends GameObject {
     growBy(added_growth: number) {
         this.growth += added_growth;
         this.calculateCurrentStage();
-        if(this.growth >= this.maxGrowth() && this.fully_grown_cb) {
+        if(this.growth >= this.maxGrowth() && this.fully_grown_cb && !this.fully_grown_called) {
             this.fully_grown_cb(this);
+            this.fully_grown_called = true;
         }
     }
 

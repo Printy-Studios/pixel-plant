@@ -545,10 +545,14 @@ export default class Game {
             return;
         }
         //Otherwise get current plants and save them
+        this.updateCachedData()
+        this.storage.set('data', this.data);
+    }
+
+    updateCachedData() {
         this.data.pace = 1 / this.seconds_per_tick;
         this.data.plant = this.plant.toJSON();
         this.data.leave_time = new Date().getTime();
-        this.storage.set('data', this.data);
     }
 
     setView(view_name: ViewID | null) {
@@ -651,10 +655,7 @@ export default class Game {
     }
 
     gameLoop() {
-        const current_time = new Date().getTime();
-        this.delta = (current_time - this.last_frame_time) / 1000;
-        this.last_frame_time = new Date().getTime();
-        this.delta_sum += this.delta;
+        this.calculateDeltaSum();
 
         if(this.delta_sum > this.seconds_per_tick && !this.loading && this.current_view == 'plant') {
             this.tick();
@@ -664,6 +665,13 @@ export default class Game {
         this.draw();
 
         window.requestAnimationFrame(this.gameLoop.bind(this))
+    }
+
+    calculateDeltaSum() {
+        const current_time = new Date().getTime();
+        this.delta = (current_time - this.last_frame_time) / 1000;
+        this.last_frame_time = new Date().getTime();
+        this.delta_sum += this.delta;
     }
 
     createPlant(plant: Plant) {

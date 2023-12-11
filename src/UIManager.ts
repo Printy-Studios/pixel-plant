@@ -1,28 +1,60 @@
 import constants from './const';
 import Game from './Game';
+import SaveManager from './SaveManager';
 import { ViewID } from './types/Misc';
-import { getTemplateMaxStageIndex } from './util';
+import { getPlantTemplateFullyGrownImageURL, getTemplateMaxStageIndex, getTemplateUnlock, secondsToTime } from './util';
+import { PlantTemplate, PlantTemplates } from './types/PlantTemplate';
+import MyCache from './MyCache';
+import Renderer from './Renderer';
+import Plant from './Plant';
 
-export default class UIInitializer {
+export default class UIManager {
 
+    data: SaveManager;
+    cache: MyCache;
+    renderer: Renderer;
     game: Game;
 
     button: HTMLButtonElement = document.createElement('button');
     menu: HTMLDivElement = document.createElement('div');
 
-    constructor(game: Game) {
+    water_button: HTMLDivElement;
+    reset_button: HTMLDivElement;
+
+    main_menu: HTMLDivElement
+    options_menu: HTMLDivElement
+
+    plant_buttons: HTMLButtonElement[] = []
+
+    progress_message: HTMLDivElement;
+    progress_message_container: HTMLDivElement;
+    progress_message_plant: HTMLDivElement;
+
+    plant_image: HTMLImageElement = document.createElement('img');
+    plant_name: HTMLHeadingElement = document.createElement('h2');
+    plant_description: HTMLParagraphElement = document.createElement('p');
+    current_plant_in_menu: PlantTemplate;
+
+    constructor(game: Game, data: SaveManager, cache: MyCache, renderer: Renderer, on_data_reset: Function, save_data: Function) {
         this.game = game;
+        this.cache = cache;
+
+        this.on_data_reset = on_data_reset;
+        this.save_data = save_data;
 
         this.button.classList.add('button')
         this.menu.classList.add('menu');
     }
 
+    on_data_reset: Function
+    save_data: Function
+
     initGameUI() {
         // Game UI
         
-        this.game.water_button = this.createButton('Water Plant', 'water-button');
+        this.water_button = this.createButton('Water Plant', 'water-button');
         
-        const water_button = this.game.water_button
+        const water_button = this.water_button
 
         // water_button.innerHTML = 'Water Plant'
         // water_button.style.position = 'absolute'
@@ -36,22 +68,22 @@ export default class UIInitializer {
 
         //Progress message
         const progress_message_container = document.createElement('div')
-        this.game.progress_message_container = progress_message_container
+        this.progress_message_container = progress_message_container
         progress_message_container.classList.add('progress-message')
         progress_message_container.tabIndex = 0;
 
-        this.game.progress_message = document.createElement('p')
-        const progress_message = this.game.progress_message;
+        this.progress_message = document.createElement('p')
+        const progress_message = this.progress_message;
         progress_message.innerHTML = 'You were away for n hours n minutes and your plant has grown by x %'
 
-        this.game.progress_message_plant = this.createButton('menu-button')
-        this.game.progress_message_plant.classList.add('small-button')
-        this.game.progress_message_plant.innerHTML = 'Plant'
+        this.progress_message_plant = this.createButton('menu-button')
+        this.progress_message_plant.classList.add('small-button')
+        this.progress_message_plant.innerHTML = 'Plant'
 
         progress_message_container.appendChild(progress_message);
-        progress_message_container.appendChild(this.game.progress_message_plant)
+        progress_message_container.appendChild(this.progress_message_plant)
 
-        this.game.progress_message_plant.addEventListener('click', () => {
+        this.progress_message_plant.addEventListener('click', () => {
             this.game.plantNewPlant(this.game.recently_unlocked)
         })
 
@@ -84,13 +116,13 @@ export default class UIInitializer {
         //Options button
         const options_button = this.createLinkButton('Options', 'options', 'menu-button');
 
-        this.game.main_menu = this.createMenu();
+        this.main_menu = this.createMenu();
 
-        this.game.main_menu.appendChild(play_button)
-        this.game.main_menu.appendChild(collection_button)
-        this.game.main_menu.appendChild(options_button)
+        this.main_menu.appendChild(play_button)
+        this.main_menu.appendChild(collection_button)
+        this.main_menu.appendChild(options_button)
 
-        this.game.renderer.addMenu(this.game.main_menu, 'main')
+        this.game.renderer.addMenu(this.main_menu, 'main')
     }
 
     initOptionsMenu() {
@@ -98,7 +130,7 @@ export default class UIInitializer {
 
         const options_menu = this.createMenu();
 
-        const options_back = this.createLinkButton('Back', 'menu', 'menu-button')
+        const options_back = this.createLinkButton('Back', 'main', 'menu-button')
 
         const reset_button = this.createButton('menu-button')
         reset_button.innerHTML = 'Reset Game'
@@ -136,18 +168,18 @@ export default class UIInitializer {
 
         pace_selector_dropdown.addEventListener('change', (e: any) => {
             this.game.seconds_per_tick = 1 / parseFloat(e.target.value);
-            this.game.saveData()
+            this.save_data()
         })
 
         this.game.renderer.addMenu(options_menu, 'options')
     }
 
-    initCollectionMenu() {
+    initCollectionMenu(unlocked_plants: string[]) {
         // Collection menu
 
         const collection_menu = this.createMenu()
 
-        const collection_back = this.createLinkButton('Back', 'menu', 'menu-button');
+        const collection_back = this.createLinkButton('Back', 'main', 'menu-button');
 
         collection_menu.appendChild(collection_back)
 
@@ -163,7 +195,7 @@ export default class UIInitializer {
 
             plant_button.appendChild(img_element)
 
-            let is_plant_unlocked = this.game.data.unlocked_plants.includes(plant_template.plant_id)
+            let is_plant_unlocked = unlocked_plants.includes(plant_template.plant_id)
 
             if(is_plant_unlocked) {
                 const image = this.game.cache.get('image_blobs/' + plant_template.plant_id + '/' + max_stage)
@@ -179,7 +211,7 @@ export default class UIInitializer {
                 plant_button.appendChild(text);
 
                 plant_button.addEventListener('click', () => {
-                    this.game.showPlantMenu(plant_template);
+                    this.showPlantMenu(plant_template);
                 });
             } else {
                 img_element.src = 'images/question-mark.png'
@@ -200,31 +232,31 @@ export default class UIInitializer {
 
         const plant_back = this.createLinkButton('Back', 'collection', 'menu-button');
 
-        this.game.plant_image.classList.add('collection-image');
+        this.plant_image.classList.add('collection-image');
 
         const plant_button = this.createButton('menu-button');
         plant_button.innerHTML = 'Plant';
 
         plant_menu.appendChild(plant_back);
-        plant_menu.appendChild(this.game.plant_image);
-        plant_menu.appendChild(this.game.plant_name);
-        plant_menu.appendChild(this.game.plant_description);
+        plant_menu.appendChild(this.plant_image);
+        plant_menu.appendChild(this.plant_name);
+        plant_menu.appendChild(this.plant_description);
         plant_menu.appendChild(plant_button);
 
         plant_button.addEventListener('click', () => {
-            this.game.plantNewPlant(this.game.current_plant_in_menu.plant_id);
+            this.game.plantNewPlant(this.current_plant_in_menu.plant_id);
         })
 
         this.game.renderer.addMenu(plant_menu, 'plant');
     }
 
-    async initUi() {
+    async initUi(unlocked_plants: string[]) {
         
         this.initGameUI();
         this.initMainMenu();
         this.initOptionsMenu();
         this.initPlantEntryMenu();
-        this.initCollectionMenu();
+        this.initCollectionMenu(unlocked_plants);
 
     }
 
@@ -239,6 +271,7 @@ export default class UIInitializer {
         const btn = this.createButton(text, class_name);
 
         btn.addEventListener('click', () => {
+            this.game.setView(null);
             this.game.renderer.showMenu(link_to)
             if(on_click) {
                 on_click()
@@ -265,5 +298,66 @@ export default class UIInitializer {
         const menu = this.menu.cloneNode() as HTMLDivElement;
         menu.classList.add(class_name)
         return menu;
+    }
+
+    showPlantMenu(plant_template: PlantTemplate) {
+        this.plant_image.src = getPlantTemplateFullyGrownImageURL(plant_template, this.cache);
+        this.plant_name.innerHTML = plant_template.name;
+        this.plant_description.innerHTML = plant_template.description;
+        this.current_plant_in_menu = plant_template;
+        this.renderer.showMenu('plant');
+    }
+
+    displayProgressMessage(plant: Plant, plant_templates: PlantTemplates, recently_unlocked: string, ff = true, growth_before: number = null, growth_after: number = null, seconds_elapsed: number = null) {
+
+        let show_plant_button = false;
+
+        let message = "";
+
+        const time = secondsToTime(seconds_elapsed);
+        let has_time = time.m > 0;
+        if(has_time && ff) {
+            const growth_difference = growth_after - growth_before;
+            let growth_percent: number | boolean = growth_difference / plant.maxGrowth() * 100
+
+            if(plant.isFullyGrown()) {
+                growth_percent = true;
+            }
+            
+            message = this.progressMessageText(time, growth_percent)
+            
+        } else if(!ff) {
+            message = this.progressMessageText({ h: 0, m: 0}, true)
+        }
+
+        const unlock = getTemplateUnlock(plant.plant_id, plant_templates);
+
+        if (plant.isFullyGrown() && unlock) {
+            message += '<br><b>You have unlocked a new plant - ' + unlock.name + '. Would you like to plant it?';
+            recently_unlocked = unlock.plant_id;
+            show_plant_button = true;
+        }
+
+        if(show_plant_button) {
+            this.progress_message_plant.style.display = 'flex';
+        } else {
+            this.progress_message_plant.style.display = 'none';
+        }
+        this.progress_message.innerHTML = message;
+        this.progress_message_container.style.display = 'flex'
+        this.progress_message_container.focus()
+    }
+
+    /**
+     * If you want to indicate that the plant has fully grown, pass 'true' for `growth_percentage`
+     */
+    progressMessageText(time: {h: number, m: number}, growth_percentage: number | boolean) {
+        const away_str = time.h > 0 && time.m > 0 ? 'You were away for' : '';
+        const hrs_str = time.h == 1 ? '1 hour' : time.h > 0 ? time.h + ' hours' : ''
+        const mins_str =  time.m == 1 ? '1 minute' : time.m > 0 ? time.m + ' minutes' : ''
+        const and_str = time.h > 0 && time.m > 0 ? 'and' : ''
+
+        const growth_str = typeof growth_percentage === 'boolean' ? 'fully grown' : 'grown by ' + growth_percentage + ' %'
+        return `${away_str} ${hrs_str} ${and_str} ${mins_str} ${and_str} your plant has ${growth_str}`
     }
 }

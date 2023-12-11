@@ -1,5 +1,6 @@
 import constants from './const';
-import Plant, { PlantTemplate } from './Plant';
+import Plant from './Plant';
+import { PlantTemplate } from './types/PlantTemplate';
 import ProgressBar from './ProgressBar';
 import Rect from './Rect';
 import Sprite from './Sprite';
@@ -132,7 +133,11 @@ export default class Renderer {
         this.ui.style.display = 'none';
         this.menu_element.style.display = 'flex'
         this.hideMenu();
-        document.getElementById(menu_id + '-menu').style.display = 'flex'
+        const menu = document.getElementById(menu_id + '-menu')
+        if(!menu) {
+            throw new Error('Could not find menu with ID ' + menu_id)
+        }
+        menu.style.display = 'flex'
         this.menu_element.style.display = 'flex';
         this.hideUI()
         //this.menu_element.replaceWith(this.menu)

@@ -1,5 +1,6 @@
 import constants from './const';
-import { PlantTemplate } from './Plant';
+import MyCache from './MyCache';
+import { PlantTemplate, PlantTemplates } from './types/PlantTemplate';
 import Vector from './Vector';
 
 
@@ -45,4 +46,15 @@ export function getPlantImageBloblID(plant_id: string, stage: number) {
 
 export function getTemplateResourceID(template_id:string) {
     return 'templates/' + template_id
+}
+
+export function getPlantTemplateFullyGrownImageURL(plant_template: PlantTemplate, cache: MyCache) {
+    const max_stage = plant_template.stages.length - 1;
+    const image = this.cache.get('image_blobs/' + plant_template.plant_id + '/' + max_stage)
+    return URL.createObjectURL(image);
+}
+
+export function getTemplateUnlock(template_id: string, all_templates: PlantTemplates) {
+    const unlock_id = all_templates[template_id].unlocks;
+    return all_templates[unlock_id]
 }

@@ -1,4 +1,4 @@
-import { PlantTemplate } from './Plant';
+import { PlantTemplate } from './types/PlantTemplate';
 
 type WaterLevelStage = {
     from: number,

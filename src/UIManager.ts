@@ -7,13 +7,17 @@ import { PlantTemplate, PlantTemplates } from './types/PlantTemplate';
 import MyCache from './MyCache';
 import Renderer from './Renderer';
 import Plant from './Plant';
+import MyEvent from './MyEvent';
+import main_events from './main_events';
+import vars from './globals';
+import globals from './globals';
 
 export default class UIManager {
 
     data: SaveManager;
     cache: MyCache;
     renderer: Renderer;
-    game: Game;
+    //game: Game;
 
     button: HTMLButtonElement = document.createElement('button');
     menu: HTMLDivElement = document.createElement('div');
@@ -35,9 +39,14 @@ export default class UIManager {
     plant_description: HTMLParagraphElement = document.createElement('p');
     current_plant_in_menu: PlantTemplate;
 
+    on_data_reset: Function
+    save_data: Function
+    
+
     constructor(game: Game, data: SaveManager, cache: MyCache, renderer: Renderer, on_data_reset: Function, save_data: Function) {
-        this.game = game;
+        //this.game = game;
         this.cache = cache;
+        this.renderer = renderer;
 
         this.on_data_reset = on_data_reset;
         this.save_data = save_data;
@@ -46,8 +55,7 @@ export default class UIManager {
         this.menu.classList.add('menu');
     }
 
-    on_data_reset: Function
-    save_data: Function
+    
 
     initGameUI() {
         // Game UI
@@ -84,7 +92,8 @@ export default class UIManager {
         progress_message_container.appendChild(this.progress_message_plant)
 
         this.progress_message_plant.addEventListener('click', () => {
-            this.game.plantNewPlant(this.game.recently_unlocked)
+            main_events.on_request_plant_new_plant.emit(globals.recently_unlocked);
+            //this.game.plantNewPlant(this.game.recently_unlocked)
         })
 
         progress_message_container.addEventListener('focusout', () => {
@@ -92,12 +101,13 @@ export default class UIManager {
         })
 
         water_button.addEventListener('click', () => {
-            this.game.waterCurrentPlant()
+            main_events.on_request_water_plant.emit();
+            //this.game.waterCurrentPlant()
         })
 
-        this.game.renderer.ui.appendChild(water_button);
-        this.game.renderer.ui.appendChild(back_button);
-        this.game.renderer.ui.appendChild(progress_message_container)
+        this.renderer.ui.appendChild(water_button);
+        this.renderer.ui.appendChild(back_button);
+        this.renderer.ui.appendChild(progress_message_container)
     }
 
     
@@ -107,7 +117,8 @@ export default class UIManager {
 
         //Play button
         const play_button = this.createViewButton('My Plant', 'plant', 'menu-button', () => {
-            this.game.fastForwardBySeconds(this.game.getTimeAway())
+            main_events.on_request_fast_forward.emit()
+            //this.game.fastForwardBySeconds(this.game.getTimeAway())
         });
 
         //Collection button
@@ -122,7 +133,7 @@ export default class UIManager {
         this.main_menu.appendChild(collection_button)
         this.main_menu.appendChild(options_button)
 
-        this.game.renderer.addMenu(this.main_menu, 'main')
+        this.renderer.addMenu(this.main_menu, 'main')
     }
 
     initOptionsMenu() {
@@ -148,7 +159,7 @@ export default class UIManager {
             const option = document.createElement('option')
             option.value = pace_key
             option.innerHTML = pace_key
-            let should_be_selected = parseFloat(pace_key) == 1 / this.game.seconds_per_tick
+            let should_be_selected = parseFloat(pace_key) == 1 / globals.seconds_per_tick
             if(should_be_selected) {
                 option.selected = true;
             }
@@ -167,14 +178,14 @@ export default class UIManager {
         //Options menu
 
         pace_selector_dropdown.addEventListener('change', (e: any) => {
-            this.game.seconds_per_tick = 1 / parseFloat(e.target.value);
+            globals.seconds_per_tick = 1 / parseFloat(e.target.value);
             this.save_data()
         })
 
-        this.game.renderer.addMenu(options_menu, 'options')
+        this.renderer.addMenu(options_menu, 'options')
     }
 
-    initCollectionMenu(unlocked_plants: string[]) {
+    initCollectionMenu(plant_templates: PlantTemplates, unlocked_plants: string[]) {
         // Collection menu
 
         const collection_menu = this.createMenu()
@@ -183,11 +194,11 @@ export default class UIManager {
 
         collection_menu.appendChild(collection_back)
 
-        for(const template_id in this.game.plant_templates) {
+        for(const template_id in plant_templates) {
             const plant_button = this.createButton('menu-button');
             plant_button.classList.add('plant-button')
             // const plant = await Plant.fromTemplate(template_id, template_id, this.cache)
-            const plant_template = this.game.plant_templates[template_id]
+            const plant_template = plant_templates[template_id]
             const max_stage = getTemplateMaxStageIndex(plant_template);
 
             const img_element = document.createElement('img')
@@ -198,7 +209,7 @@ export default class UIManager {
             let is_plant_unlocked = unlocked_plants.includes(plant_template.plant_id)
 
             if(is_plant_unlocked) {
-                const image = this.game.cache.get('image_blobs/' + plant_template.plant_id + '/' + max_stage)
+                const image = this.cache.get('image_blobs/' + plant_template.plant_id + '/' + max_stage)
 
                 const image_url = URL.createObjectURL(image);
 
@@ -223,7 +234,7 @@ export default class UIManager {
 
         }
 
-        this.game.renderer.addMenu(collection_menu, 'collection')
+        this.renderer.addMenu(collection_menu, 'collection')
     }
 
     initPlantEntryMenu() {
@@ -244,19 +255,20 @@ export default class UIManager {
         plant_menu.appendChild(plant_button);
 
         plant_button.addEventListener('click', () => {
-            this.game.plantNewPlant(this.current_plant_in_menu.plant_id);
+            main_events.on_request_plant_new_plant.emit(this.current_plant_in_menu.plant_id);
+            //this.game.plantNewPlant(this.current_plant_in_menu.plant_id);
         })
 
-        this.game.renderer.addMenu(plant_menu, 'plant');
+        this.renderer.addMenu(plant_menu, 'plant');
     }
 
-    async initUi(unlocked_plants: string[]) {
+    async initUi(plant_templates: PlantTemplates, unlocked_plants: string[]) {
         
         this.initGameUI();
         this.initMainMenu();
         this.initOptionsMenu();
         this.initPlantEntryMenu();
-        this.initCollectionMenu(unlocked_plants);
+        this.initCollectionMenu(plant_templates, unlocked_plants);
 
     }
 
@@ -271,8 +283,7 @@ export default class UIManager {
         const btn = this.createButton(text, class_name);
 
         btn.addEventListener('click', () => {
-            this.game.setView(null);
-            this.game.renderer.showMenu(link_to)
+            main_events.on_request_show_menu.emit(link_to)
             if(on_click) {
                 on_click()
             }
@@ -285,7 +296,7 @@ export default class UIManager {
         const btn = this.createButton(text, class_name);
 
         btn.addEventListener('click', () => {
-            this.game.setView(link_to)
+            main_events.on_request_set_view.emit(link_to);
             if(on_click) {
                 on_click()
             }

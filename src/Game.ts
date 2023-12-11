@@ -11,6 +11,7 @@ import { getViewportCenter, secondsToTime } from './util';
 import Vector from './Vector';
 import { SaveData } from './types/SaveData'
 import SaveManager from './SaveManager';
+import main_events from './main_events';
 
 type Plants = {
     [id: string]: Plant
@@ -58,7 +59,10 @@ export default class Game {
     recently_unlocked: string;
 
     constructor() {
-
+        main_events.on_request_show_menu.on(this.onRequestShowMenu.bind(this));
+        main_events.on_request_set_view.on(this.onRequestSetView.bind(this));
+        main_events.on_request_fast_forward.on(this.onRequestFastForward.bind(this));
+        main_events.on_request_water_plant.on(this.onRequestWaterPlant.bind(this));
     }
 
     async onDataResetPress() {
@@ -73,6 +77,24 @@ export default class Game {
         )
     }
 
+    onRequestShowMenu(menu_id: string) {
+        this.setView(null);
+        this.renderer.showMenu(menu_id)
+    }
+
+    onRequestSetView(view_id: ViewID) {
+        console.log('setting view to ' + view_id)
+        this.setView(view_id)
+    }
+
+    onRequestFastForward() {
+        this.fastForwardBySeconds(this.data.getTimeAway())
+    }
+
+    onRequestWaterPlant() {
+        this.waterCurrentPlant();
+    }
+
     async init() {
         this.setLoading(true)
         await this.data.setDataIfNull();
@@ -84,7 +106,7 @@ export default class Game {
             this.calculatePositions()
         })
         if(!this.first_init) {
-            await this.ui.initUi(this.data.data.unlocked_plants);
+            await this.ui.initUi(this.plant_templates, this.data.data.unlocked_plants);
             console.log('initializing ui')
             this.first_init = true;
         }
@@ -154,8 +176,6 @@ export default class Game {
         return seconds / this.seconds_per_tick
     }
 
-    
-
     setView(view_name: ViewID | null) {
         this.current_view = view_name
         if(view_name) {
@@ -163,16 +183,6 @@ export default class Game {
         }
         
     }
-
-    
-
-    getTimeAway() {
-        let current_time_ms = new Date().getTime();
-        let time_difference_ms = current_time_ms - this.data.data.leave_time
-        return this.data.data.leave_time ? (time_difference_ms) / 1000 : null;
-    }
-
-    
 
     calculatePositions() {
 

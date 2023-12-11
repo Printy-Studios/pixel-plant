@@ -80,4 +80,10 @@ export default class SaveManager {
             this.data = this.getData();
         }
     }
+
+    getTimeAway() {
+        let current_time_ms = new Date().getTime();
+        let time_difference_ms = current_time_ms - this.data.leave_time
+        return this.data.leave_time ? (time_difference_ms) / 1000 : null;
+    }
 }

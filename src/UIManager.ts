@@ -209,9 +209,9 @@ export default class UIManager {
             let is_plant_unlocked = unlocked_plants.includes(plant_template.plant_id)
 
             if(is_plant_unlocked) {
-                const image = this.cache.get('image_blobs/' + plant_template.plant_id + '/' + max_stage)
+                //const image = this.cache.get('image_blobs/' + plant_template.plant_id + '/' + max_stage)
 
-                const image_url = URL.createObjectURL(image);
+                const image_url = plant_template.stages[max_stage].image_url//URL.createObjectURL(image);
 
                 img_element.src = image_url
 
@@ -370,5 +370,9 @@ export default class UIManager {
 
         const growth_str = typeof growth_percentage === 'boolean' ? 'fully grown' : 'grown by ' + growth_percentage + ' %'
         return `${away_str} ${hrs_str} ${and_str} ${mins_str} ${and_str} your plant has ${growth_str}`
+    }
+
+    calculatePositions(plant: Plant){
+        this.water_button.style.top = plant.position.y * constants.scale + 160 + 'px'
     }
 }

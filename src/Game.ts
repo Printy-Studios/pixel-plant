@@ -100,6 +100,7 @@ export default class Game {
         await this.data.setDataIfNull();
         await this.initTemplates();
         await this.initImages();
+        this.initTemplateImageURLs();
         this.seconds_per_tick = 1 / this.data.data.pace
         window.addEventListener('resize', () => {
             console.log('ddd')
@@ -145,6 +146,16 @@ export default class Game {
         }
     }
 
+    initTemplateImageURLs() {
+        for(const template_id in this.plant_templates) {
+            const template = this.plant_templates[template_id]
+            for(const i in template.stages) {
+                const image = this.cache.get('image_blobs/' + template.plant_id + '/' + i)
+                template.stages[i].image_url = URL.createObjectURL(image);
+            }
+        }
+    }
+
     onPlantFullyGrown(plant: Plant) {
         console.log('plant fully grown')
         this.ui.displayProgressMessage(this.plant, this.plant_templates, this.recently_unlocked, false);
@@ -185,11 +196,8 @@ export default class Game {
     }
 
     calculatePositions() {
-
         this.plant.setPosition(getViewportCenter())
-        console.log('waterbtn')
-        console.log(this.ui.water_button)
-        this.ui.water_button.style.top = this.plant.position.y * constants.scale + 160 + 'px'
+        this.ui.calculatePositions(this.plant);
     }
 
     setLoading(loading: boolean) {

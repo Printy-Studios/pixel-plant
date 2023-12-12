@@ -13,6 +13,7 @@ export type PlantTemplate = {
     },
     stages: {
         at_growth: number
+        image_url: string
     }[]
 }
 

@@ -39,16 +39,12 @@ export default class UIManager {
     plant_description: HTMLParagraphElement = document.createElement('p');
     current_plant_in_menu: PlantTemplate;
 
-    on_data_reset: Function
     save_data: Function
     
 
-    constructor(game: Game, data: SaveManager, cache: MyCache, renderer: Renderer, on_data_reset: Function, save_data: Function) {
-        //this.game = game;
-        this.cache = cache;
+    constructor(renderer: Renderer, save_data: Function) {
         this.renderer = renderer;
 
-        this.on_data_reset = on_data_reset;
         this.save_data = save_data;
 
         this.button.classList.add('button')
@@ -84,7 +80,7 @@ export default class UIManager {
         const progress_message = this.progress_message;
         progress_message.innerHTML = 'You were away for n hours n minutes and your plant has grown by x %'
 
-        this.progress_message_plant = this.createButton('menu-button')
+        this.progress_message_plant = this.createButton('Plant', 'menu-button')
         this.progress_message_plant.classList.add('small-button')
         this.progress_message_plant.innerHTML = 'Plant'
 
@@ -143,8 +139,7 @@ export default class UIManager {
 
         const options_back = this.createLinkButton('Back', 'main', 'menu-button')
 
-        const reset_button = this.createButton('menu-button')
-        reset_button.innerHTML = 'Reset Game'
+        const reset_button = this.createButton('Reset Game', 'menu-button')
 
         const pace_selector = document.createElement('div')
         const pace_selector_label = document.createElement('p')
@@ -182,6 +177,10 @@ export default class UIManager {
             this.save_data()
         })
 
+        reset_button.addEventListener('click', () => {
+            main_events.on_request_data_reset.emit();
+        })
+
         this.renderer.addMenu(options_menu, 'options')
     }
 
@@ -195,7 +194,7 @@ export default class UIManager {
         collection_menu.appendChild(collection_back)
 
         for(const template_id in plant_templates) {
-            const plant_button = this.createButton('menu-button');
+            const plant_button = this.createButton('', 'menu-button');
             plant_button.classList.add('plant-button')
             // const plant = await Plant.fromTemplate(template_id, template_id, this.cache)
             const plant_template = plant_templates[template_id]
@@ -243,10 +242,9 @@ export default class UIManager {
 
         const plant_back = this.createLinkButton('Back', 'collection', 'menu-button');
 
-        this.plant_image.classList.add('collection-image');
+        this.plant_image.classList.add('plant-entry-image');
 
-        const plant_button = this.createButton('menu-button');
-        plant_button.innerHTML = 'Plant';
+        const plant_button = this.createButton('Plant', 'menu-button');
 
         plant_menu.appendChild(plant_back);
         plant_menu.appendChild(this.plant_image);
@@ -312,7 +310,7 @@ export default class UIManager {
     }
 
     showPlantMenu(plant_template: PlantTemplate) {
-        this.plant_image.src = getPlantTemplateFullyGrownImageURL(plant_template, this.cache);
+        this.plant_image.src = getPlantTemplateFullyGrownImageURL(plant_template);
         this.plant_name.innerHTML = plant_template.name;
         this.plant_description.innerHTML = plant_template.description;
         this.current_plant_in_menu = plant_template;
@@ -320,6 +318,8 @@ export default class UIManager {
     }
 
     displayProgressMessage(plant: Plant, plant_templates: PlantTemplates, recently_unlocked: string, ff = true, growth_before: number = null, growth_after: number = null, seconds_elapsed: number = null) {
+
+        
 
         let show_plant_button = false;
 
@@ -339,6 +339,8 @@ export default class UIManager {
             
         } else if(!ff) {
             message = this.progressMessageText({ h: 0, m: 0}, true)
+        } else {
+            return;
         }
 
         const unlock = getTemplateUnlock(plant.plant_id, plant_templates);
@@ -363,7 +365,7 @@ export default class UIManager {
      * If you want to indicate that the plant has fully grown, pass 'true' for `growth_percentage`
      */
     progressMessageText(time: {h: number, m: number}, growth_percentage: number | boolean) {
-        const away_str = time.h > 0 && time.m > 0 ? 'You were away for' : '';
+        const away_str = time.h > 0 || time.m > 0 ? 'You were away for' : '';
         const hrs_str = time.h == 1 ? '1 hour' : time.h > 0 ? time.h + ' hours' : ''
         const mins_str =  time.m == 1 ? '1 minute' : time.m > 0 ? time.m + ' minutes' : ''
         const and_str = time.h > 0 && time.m > 0 ? 'and' : ''

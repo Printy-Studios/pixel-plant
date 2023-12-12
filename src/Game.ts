@@ -26,7 +26,7 @@ export default class Game {
     storage = new MyStorage();
 
     data = new SaveManager(this.storage, this.cache);
-    ui = new UIManager(this, this.data, this.cache, this.renderer, this.onDataResetPress, this.onDataSave)
+    ui = new UIManager(this.renderer, this.onDataSave)
 
     image_loader = new ImageLoader(this.cache);
     
@@ -59,13 +59,23 @@ export default class Game {
     recently_unlocked: string;
 
     constructor() {
+        main_events.on_request_data_reset.on(this.onRequestDataReset.bind(this));
         main_events.on_request_show_menu.on(this.onRequestShowMenu.bind(this));
         main_events.on_request_set_view.on(this.onRequestSetView.bind(this));
         main_events.on_request_fast_forward.on(this.onRequestFastForward.bind(this));
+        main_events.on_request_plant_new_plant.on(this.onRequestPlantNewPlant.bind(this));
         main_events.on_request_water_plant.on(this.onRequestWaterPlant.bind(this));
+
+        window.addEventListener('focus', () => {
+            if(this.current_view == 'plant') {
+                this.fastForwardBySeconds(this.data.getTimeAway())
+            }
+        })
     }
 
-    async onDataResetPress() {
+    async onRequestDataReset() {
+        const confirm_reset = confirm('Are you sure you want to reset all data? Plant data and collection will be lost')
+        if(!confirm_reset) return;
         await this.data.resetData();
         await this.init()
     }
@@ -83,7 +93,6 @@ export default class Game {
     }
 
     onRequestSetView(view_id: ViewID) {
-        console.log('setting view to ' + view_id)
         this.setView(view_id)
     }
 
@@ -95,6 +104,10 @@ export default class Game {
         this.waterCurrentPlant();
     }
 
+    onRequestPlantNewPlant(template_id: string) {
+        this.plantNewPlant(template_id)
+    }
+
     async init() {
         this.setLoading(true)
         await this.data.setDataIfNull();
@@ -103,23 +116,19 @@ export default class Game {
         this.initTemplateImageURLs();
         this.seconds_per_tick = 1 / this.data.data.pace
         window.addEventListener('resize', () => {
-            console.log('ddd')
             this.calculatePositions()
         })
         if(!this.first_init) {
             await this.ui.initUi(this.plant_templates, this.data.data.unlocked_plants);
-            console.log('initializing ui')
             this.first_init = true;
         }
         
         await this.initPlants();
-        console.log('fff')
         this.calculatePositions();
 
         
         this.setLoading(false)
         this.renderer.showMenu('main')
-        //console.log(this.renderer.menu)
     }
 
     async initImages() {
@@ -133,7 +142,6 @@ export default class Game {
     }
 
     async initPlants() {
-        console.log('abc');
         const plant = await Plant.fromJSON(this.data.data.plant, this.cache)
         this.setPlant(plant);
     }
@@ -157,7 +165,6 @@ export default class Game {
     }
 
     onPlantFullyGrown(plant: Plant) {
-        console.log('plant fully grown')
         this.ui.displayProgressMessage(this.plant, this.plant_templates, this.recently_unlocked, false);
         this.data.data.unlocked_plants.push(plant.unlocks);
         this.data.saveData(
@@ -173,9 +180,7 @@ export default class Game {
         const growth_before = this.plant.growth;
 
         const ticks = this.getTicksBySeconds(seconds)
-        for(const plant_key in this.plants) {
-            this.plants[plant_key].fastForward(ticks)
-        }
+        this.plant.fastForward(ticks)
 
         const growth_after = this.plant.growth;
         
@@ -226,7 +231,6 @@ export default class Game {
             this.seconds_per_tick,
             this.plant
         );
-        console.log(this.plant)
         this.plant.tick();
     }
 
@@ -249,7 +253,6 @@ export default class Game {
             this.tick();
             this.delta_sum = 0;
         }
-        //console.log(this.plant.water_level.current)
         this.draw();
 
         window.requestAnimationFrame(this.gameLoop.bind(this))

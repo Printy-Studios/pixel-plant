@@ -48,10 +48,9 @@ export function getTemplateResourceID(template_id:string) {
     return 'templates/' + template_id
 }
 
-export function getPlantTemplateFullyGrownImageURL(plant_template: PlantTemplate, cache: MyCache) {
+export function getPlantTemplateFullyGrownImageURL(plant_template: PlantTemplate) {
     const max_stage = plant_template.stages.length - 1;
-    const image = this.cache.get('image_blobs/' + plant_template.plant_id + '/' + max_stage)
-    return URL.createObjectURL(image);
+    return plant_template.stages[max_stage].image_url
 }
 
 export function getTemplateUnlock(template_id: string, all_templates: PlantTemplates) {

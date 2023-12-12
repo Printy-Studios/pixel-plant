@@ -81,6 +81,10 @@ export default class SaveManager {
         }
     }
 
+    /**
+     * Returns how long the user was away (not in-game or window not focused)
+     * @returns 
+     */
     getTimeAway() {
         let current_time_ms = new Date().getTime();
         let time_difference_ms = current_time_ms - this.data.leave_time

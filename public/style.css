@@ -80,9 +80,10 @@ body, html {
 }
 
 .menu-button {
+    image-rendering: pixelated;
     max-width: 180px;
     width: 100%;
-    border: 1px solid brown;
+    border: 8px solid brown;
     color: brown;
     background-color: white;
 }
@@ -139,6 +140,13 @@ body, html {
     align-self: center;
     /* height: auto; */
     image-rendering: pixelated;
+    width: 100%;
+}
+
+.plant-entry-image {
+    max-width: 500px;
+    image-rendering: pixelated;
+    align-self: center;
     width: 100%;
 }
 

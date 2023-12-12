@@ -6,7 +6,8 @@ const main_events = {
     on_request_fast_forward: new MyEvent(),
     on_request_show_menu: new MyEvent<(menu_id: string) => void>(),
     on_request_set_view: new MyEvent<(view_id: string) => void>(),
-    on_fast_forward: new MyEvent<() => void>()
+    on_request_data_reset: new MyEvent(),
+    on_fast_forward: new MyEvent()
 }
 
 export default main_events

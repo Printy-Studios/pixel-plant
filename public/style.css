@@ -1,9 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
 body, html {
     margin: 0px;
     flex-direction: column;
     display: flex;
     height: 100vh;
     width: 100vw;
+    font-family: 'VT323', Arial, monospace;
+    font-size: 18px;
+}
+
+button {
+    font-family: inherit;
+    font-size: 1rem;
 }
 
 #canvas {
@@ -46,15 +55,20 @@ body, html {
 .button {
     width: fit-content;
     padding: 8px;
-    border: 1px solid brown;
+    max-width: 180px;
+    width: 100%;
+    /* border: 1px solid #a52a2a; */
     color: brown;
+    background-color: white;
     display: flex;
     align-Items: center;
     justify-Content: center;
     cursor: pointer;
     user-select: none;
-    border-radius: 4px;
-    background-color: white;
+    border-width: 4px;
+    border-image: url('images/button-border-brown.png') 14;
+    background-clip: padding-box;
+    /* background-color: white; */
 }
 
 .button:hover {
@@ -68,35 +82,43 @@ body, html {
 }
 
 .water-button {
+    border-image: url('images/button-border-blue.png') 14;
     background-color: blue;
-}
-
-.water-button:hover {
-    background-color: lightblue;
-}
-
-.water-button:active {
-    background-color: blue;
-}
-
-.menu-button {
-    image-rendering: pixelated;
-    max-width: 180px;
-    width: 100%;
-    border: 8px solid brown;
-    color: brown;
-    background-color: white;
-}
-
-.menu-button:hover {
-    background: brown;
     color: white;
 }
 
-.menu-button:active {
-    background: white;
-    color: brown;
+.water-button:hover {
+    border-image: url('images/button-border-lightblue.png') 14;
+    background-color: #add8e6;
+    color: blue;
 }
+
+.water-button:active {
+    border-image: url('images/button-border-blue.png') 14;
+    color: white;
+    background-color: blue;
+}
+
+/* .button {
+    image-rendering: pixelated;
+    max-width: 180px;
+    width: 100%;
+    color: brown;
+    background-color: white;
+    border-width: 4px;
+    background-clip: content-box;
+    border-image: url('images/button-border-brown.png') 14;
+}
+
+.button:hover {
+    background-color: brown;
+    color: white;
+}
+
+.button:active {
+    background-color: white;
+    color: brown;
+} */
 
 .plant-button {
     max-width: 240px;

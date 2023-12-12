@@ -224,7 +224,7 @@ export default class UIManager {
                     this.showPlantMenu(plant_template);
                 });
             } else {
-                img_element.src = 'images/question-mark.png'
+                img_element.src = 'images/question-mark.jpeg'
             }
             
             

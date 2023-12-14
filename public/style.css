@@ -48,6 +48,10 @@ button {
     overflow-y: scroll;
 }
 
+.menu-non-centered {
+    justify-content: flex-start;
+}
+
 #plant-menu {
     justify-content: normal;
 }

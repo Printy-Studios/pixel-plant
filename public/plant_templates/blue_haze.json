@@ -1,0 +1,40 @@
+{
+    "plant_id": "blue_haze",
+    "name": "Blue Haze",
+    "description": "This mysterious-looking blue plant is a great addition to rooms with a calm, simple atmosphere. Blue Haze grows the best in dark and humid places, and it gets its blue tone due to the amount of water that it absorbs, and as such it requires to be watered often.",
+    "water_level": {
+        "decrease_rate": 4,
+        "stages": [
+            {
+                "from": 0,
+                "to": 80,
+                "growth_rate": 2
+            },
+            {
+                "from": 80,
+                "to": 100,
+                "growth_rate": 8
+            }
+        ]
+    },
+    "stages": [
+        {
+            "at_growth": 50
+        },
+        {
+            "at_growth": 100
+        },
+        {
+            "at_growth": 150
+        },
+        {
+            "at_growth": 250
+        },
+        {
+            "at_growth": 350
+        },
+        {
+            "at_growth": 500
+        }
+    ]
+}

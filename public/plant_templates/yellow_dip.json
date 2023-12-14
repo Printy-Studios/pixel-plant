@@ -1,5 +1,6 @@
 {
     "plant_id": "yellow_dip",
+    "unlocks": "blue_haze",
     "name": "Yellow Dip",
     "description": "This completely yellow plant, appropriately named, is a plant that likes to grow in very sunny places. It's leaves are often used in herbal teas",
     "water_level": {

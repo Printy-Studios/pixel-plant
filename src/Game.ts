@@ -12,6 +12,7 @@ import Vector from './Vector';
 import { SaveData } from './types/SaveData'
 import SaveManager from './SaveManager';
 import main_events from './main_events';
+import globals from './globals';
 
 type Plants = {
     [id: string]: Plant
@@ -26,14 +27,12 @@ export default class Game {
     storage = new MyStorage();
 
     data = new SaveManager(this.storage, this.cache);
-    ui = new UIManager(this.renderer, this.onDataSave)
+    ui = new UIManager(this.renderer)
 
     image_loader = new ImageLoader(this.cache);
     
 
     first_init: boolean = false; //Whether this the game has been initialized at least once
-
-    seconds_per_tick: number;
 
     last_frame_time = 0;
     delta = 0;
@@ -42,11 +41,6 @@ export default class Game {
     plant: Plant;
 
     plant_templates: PlantTemplates = {}
-
-    plant_template_ids: string[] = [
-        "basic_plant",
-        "yellow_dip"
-    ]
 
     plants: Plants = {}
 
@@ -60,6 +54,7 @@ export default class Game {
 
     constructor() {
         main_events.on_request_data_reset.on(this.onRequestDataReset.bind(this));
+        main_events.on_request_data_save.on(this.onRequestDataSave.bind(this));
         main_events.on_request_show_menu.on(this.onRequestShowMenu.bind(this));
         main_events.on_request_set_view.on(this.onRequestSetView.bind(this));
         main_events.on_request_fast_forward.on(this.onRequestFastForward.bind(this));
@@ -80,9 +75,10 @@ export default class Game {
         await this.init()
     }
     
-    onDataSave() {
+    onRequestDataSave() {
+        console.log(globals.seconds_per_tick);
         this.data.saveData(
-            this.seconds_per_tick,
+            globals.seconds_per_tick,
             this.plant
         )
     }
@@ -114,7 +110,7 @@ export default class Game {
         await this.initTemplates();
         await this.initImages();
         this.initTemplateImageURLs();
-        this.seconds_per_tick = 1 / this.data.data.pace
+        globals.seconds_per_tick = 1 / this.data.data.pace
         window.addEventListener('resize', () => {
             this.calculatePositions()
         })
@@ -147,7 +143,7 @@ export default class Game {
     }
 
     async initTemplates() {
-        for(const template_id of this.plant_template_ids) {
+        for(const template_id of constants.plant_template_ids) {
             const res = await fetch('plant_templates/' + template_id + '.json')
             const json = await res.json()
             this.plant_templates[template_id] = json;
@@ -168,7 +164,7 @@ export default class Game {
         this.ui.displayProgressMessage(this.plant, this.plant_templates, this.recently_unlocked, false);
         this.data.data.unlocked_plants.push(plant.unlocks);
         this.data.saveData(
-            this.seconds_per_tick,
+            globals.seconds_per_tick,
             this.plant
         );
     }
@@ -189,7 +185,7 @@ export default class Game {
     }
 
     getTicksBySeconds(seconds: number) {
-        return seconds / this.seconds_per_tick
+        return seconds / globals.seconds_per_tick
     }
 
     setView(view_name: ViewID | null) {
@@ -228,7 +224,7 @@ export default class Game {
 
     tick() {
         this.data.saveData(
-            this.seconds_per_tick,
+            globals.seconds_per_tick,
             this.plant
         );
         this.plant.tick();
@@ -249,7 +245,7 @@ export default class Game {
     gameLoop() {
         this.calculateDeltaSum();
 
-        if(this.delta_sum > this.seconds_per_tick && !this.loading && this.current_view == 'plant') {
+        if(this.delta_sum > globals.seconds_per_tick && !this.loading && this.current_view == 'plant') {
             this.tick();
             this.delta_sum = 0;
         }

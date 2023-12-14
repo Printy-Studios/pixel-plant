@@ -39,13 +39,13 @@ export default class UIManager {
     plant_description: HTMLParagraphElement = document.createElement('p');
     current_plant_in_menu: PlantTemplate;
 
-    save_data: Function
+    collection_images: {
+        [template_id: string]: HTMLImageElement
+    } = {};
     
 
-    constructor(renderer: Renderer, save_data: Function) {
+    constructor(renderer: Renderer) {
         this.renderer = renderer;
-
-        this.save_data = save_data;
 
         this.button.classList.add('button')
         this.menu.classList.add('menu');
@@ -174,7 +174,7 @@ export default class UIManager {
 
         pace_selector_dropdown.addEventListener('change', (e: any) => {
             globals.seconds_per_tick = 1 / parseFloat(e.target.value);
-            this.save_data()
+            main_events.on_request_data_save.emit();
         })
 
         reset_button.addEventListener('click', () => {
@@ -187,7 +187,7 @@ export default class UIManager {
     initCollectionMenu(plant_templates: PlantTemplates, unlocked_plants: string[]) {
         // Collection menu
 
-        const collection_menu = this.createMenu()
+        const collection_menu = this.createMenu('menu-non-centered')
 
         const collection_back = this.createLinkButton('Back', 'main', 'menu-button');
 
@@ -195,41 +195,23 @@ export default class UIManager {
 
         for(const template_id in plant_templates) {
             const plant_button = this.createButton('', 'menu-button');
-            plant_button.classList.add('plant-button')
+            plant_button.classList.add('plant-button');
             // const plant = await Plant.fromTemplate(template_id, template_id, this.cache)
-            const plant_template = plant_templates[template_id]
+            const plant_template = plant_templates[template_id];
             const max_stage = getTemplateMaxStageIndex(plant_template);
 
-            const img_element = document.createElement('img')
-            img_element.classList.add('collection-image')
+            const img_element = document.createElement('img');
+            img_element.classList.add('collection-image');
 
-            plant_button.appendChild(img_element)
+            plant_button.appendChild(img_element);
 
-            let is_plant_unlocked = unlocked_plants.includes(plant_template.plant_id)
+            let is_plant_unlocked = unlocked_plants.includes(plant_template.plant_id);
 
-            if(is_plant_unlocked) {
-                //const image = this.cache.get('image_blobs/' + plant_template.plant_id + '/' + max_stage)
-
-                const image_url = plant_template.stages[max_stage].image_url//URL.createObjectURL(image);
-
-                img_element.src = image_url
-
-                const text = document.createElement('p');
-                text.innerHTML = plant_template.name
-
-                
-                plant_button.appendChild(text);
-
-                plant_button.addEventListener('click', () => {
-                    this.showPlantMenu(plant_template);
-                });
-            } else {
-                img_element.src = 'images/question-mark.jpeg'
-            }
+            this.updateCollectionImage(plant_template, is_plant_unlocked);
             
-            
+            this.collection_images[template_id] = img_element;
 
-            collection_menu.appendChild(plant_button)
+            collection_menu.appendChild(plant_button);
 
         }
 
@@ -376,5 +358,27 @@ export default class UIManager {
 
     calculatePositions(plant: Plant){
         this.water_button.style.top = plant.position.y * constants.scale + 160 + 'px'
+    }
+
+    updateCollectionImage(template: PlantTemplate, is_plant_unlocked: boolean) {
+        if(is_plant_unlocked) {
+            //const image = this.cache.get('image_blobs/' + plant_template.plant_id + '/' + max_stage)
+
+            const image_url = plant_template.stages[max_stage].image_url//URL.createObjectURL(image);
+
+            img_element.src = image_url
+
+            const text = document.createElement('p');
+            text.innerHTML = plant_template.name
+
+            
+            plant_button.appendChild(text);
+
+            plant_button.addEventListener('click', () => {
+                this.showPlantMenu(plant_template);
+            });
+        } else {
+            img_element.src = 'images/question-mark.jpeg'
+        }
     }
 }

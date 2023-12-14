@@ -123,11 +123,15 @@ export default class UIManager {
         //Options button
         const options_button = this.createLinkButton('Options', 'options', 'menu-button');
 
+        //Help button
+        const help_button = this.createLinkButton('Help', 'help', 'menu-button');
+
         this.main_menu = this.createMenu();
 
-        this.main_menu.appendChild(play_button)
-        this.main_menu.appendChild(collection_button)
-        this.main_menu.appendChild(options_button)
+        this.main_menu.appendChild(play_button);
+        this.main_menu.appendChild(collection_button);
+        this.main_menu.appendChild(help_button);
+        this.main_menu.appendChild(options_button);
 
         this.renderer.addMenu(this.main_menu, 'main')
     }
@@ -198,10 +202,12 @@ export default class UIManager {
             plant_button.classList.add('plant-button');
             // const plant = await Plant.fromTemplate(template_id, template_id, this.cache)
             const plant_template = plant_templates[template_id];
-            const max_stage = getTemplateMaxStageIndex(plant_template);
+            
 
             const img_element = document.createElement('img');
             img_element.classList.add('collection-image');
+
+            this.collection_images[template_id] = img_element;
 
             plant_button.appendChild(img_element);
 
@@ -209,7 +215,7 @@ export default class UIManager {
 
             this.updateCollectionImage(plant_template, is_plant_unlocked);
             
-            this.collection_images[template_id] = img_element;
+            
 
             collection_menu.appendChild(plant_button);
 
@@ -242,6 +248,37 @@ export default class UIManager {
         this.renderer.addMenu(plant_menu, 'plant');
     }
 
+    initHelpMenu() {
+
+        const help_menu = this.createMenu('menu-non-centered');
+
+        const back_button = this.createLinkButton('Back', 'main');
+
+        const text_element = document.createElement('p');
+
+        text_element.innerHTML = `Welcome to My Pixel Plant. This is a small relaxing game where the sole
+        purpose is to just water your plant and watch it grow.<br><br>
+        
+        Each plant has several stages of growth, each of varying lengths. <br><br>
+        
+        A plant has a water level - which indicates how much water the plant has. The water
+        levels are split into water level stages, and the less water a plant has, the slower it will grow. The water level
+        stages are divided by dark vertical lines that you can see on your water level bar. <br><br>
+        
+        Whenever you grow a plant, a new plant gets unlocked. Each newly unlocked plant takes longer and longer to grow. <br><br>
+        
+        The Collection is a place where you can view all of your unlocked plant types and some information about them, such as how long they take to grow, how many stages
+        they have, and how frequently they have to be watered. Currently there are 4 plant types in the game. <br><br>
+        
+        Good luck with your plants and I hope you'll have fun playing this little game!
+        `
+
+        help_menu.appendChild(back_button);
+        help_menu.appendChild(text_element);
+
+        this.renderer.addMenu(help_menu, 'help');
+    }
+
     async initUi(plant_templates: PlantTemplates, unlocked_plants: string[]) {
         
         this.initGameUI();
@@ -249,6 +286,7 @@ export default class UIManager {
         this.initOptionsMenu();
         this.initPlantEntryMenu();
         this.initCollectionMenu(plant_templates, unlocked_plants);
+        this.initHelpMenu();
 
     }
 
@@ -259,7 +297,7 @@ export default class UIManager {
         return btn;
     }
 
-    createLinkButton(text = "", link_to: string = "", class_name: string = "", on_click: Function = null) {
+    createLinkButton(text = "", link_to: string = "", class_name: string = null, on_click: Function = null) {
         const btn = this.createButton(text, class_name);
 
         btn.addEventListener('click', () => {
@@ -360,7 +398,16 @@ export default class UIManager {
         this.water_button.style.top = plant.position.y * constants.scale + 160 + 'px'
     }
 
-    updateCollectionImage(template: PlantTemplate, is_plant_unlocked: boolean) {
+    updateCollectionImage(plant_template: PlantTemplate, is_plant_unlocked: boolean) {
+
+        console.log(this.collection_images)
+
+        const img_element = this.collection_images[plant_template.plant_id];
+        const max_stage = getTemplateMaxStageIndex(plant_template);
+        
+        console.log(img_element);
+        const plant_button = img_element.closest('button');
+
         if(is_plant_unlocked) {
             //const image = this.cache.get('image_blobs/' + plant_template.plant_id + '/' + max_stage)
 
@@ -368,15 +415,23 @@ export default class UIManager {
 
             img_element.src = image_url
 
-            const text = document.createElement('p');
-            text.innerHTML = plant_template.name
+
+            //Check if text has already been added to the button
+            if(!plant_button.querySelector('p')) {
+                const text = document.createElement('p');
+                text.innerHTML = plant_template.name
+
+                plant_button.appendChild(text);
+
+                //Additionally we can add the event lisetener, because this above if statement
+                //will only be true once, when the plant isn't unlocked and there is no text
+                plant_button.addEventListener('click', () => {
+                    this.showPlantMenu(plant_template);
+                });
+            }
+            
 
             
-            plant_button.appendChild(text);
-
-            plant_button.addEventListener('click', () => {
-                this.showPlantMenu(plant_template);
-            });
         } else {
             img_element.src = 'images/question-mark.jpeg'
         }

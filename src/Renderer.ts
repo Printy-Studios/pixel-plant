@@ -120,7 +120,7 @@ export default class Renderer {
         //this.drawSprite
     }
 
-    addMenu(menu: HTMLDivElement, menu_id: string = null) {
+    addMenu(menu: HTMLDivElement, menu_id: string) {
         if(menu_id) {
             menu.id = menu_id + '-menu'
         }

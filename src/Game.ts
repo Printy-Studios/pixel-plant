@@ -167,6 +167,12 @@ export default class Game {
             globals.seconds_per_tick,
             this.plant
         );
+
+        if(plant.unlocks) {
+            const unlocked_template = this.plant_templates[plant.unlocks];
+            this.ui.updateCollectionImage(unlocked_template, true)
+        }
+        
     }
 
     fastForwardBySeconds(seconds: number) {

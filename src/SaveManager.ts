@@ -1,3 +1,4 @@
+import main_events from './main_events';
 import MyCache from './MyCache';
 import MyStorage from './MyStorage';
 import Plant from './Plant';
@@ -55,6 +56,8 @@ export default class SaveManager {
         }
 
         this.setData(data);
+
+        main_events.after_data_reset.emit();
     }
     
     setData(data: SaveData) {

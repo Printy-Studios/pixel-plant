@@ -8,6 +8,7 @@ const main_events = {
     on_request_set_view: new MyEvent<(view_id: string) => void>(),
     on_request_data_reset: new MyEvent(),
     on_request_data_save: new MyEvent(),
+    after_data_reset: new MyEvent(),
     on_fast_forward: new MyEvent()
 }
 

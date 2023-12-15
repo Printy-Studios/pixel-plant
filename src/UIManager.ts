@@ -423,7 +423,10 @@ export default class UIManager {
     }
 
     calculatePositions(plant: Plant){
-        this.water_button.style.top = plant.position.y * constants.scale + 160 + 'px'
+        console.log('calculating positions');
+        console.log(plant.position.y)
+        this.water_button.style.top = plant.position.y * constants.scale + 200 + 'px'
+        this.water_button.style.left = window.innerWidth / 2 + 'px';
     }
 
     updateCollectionImage(plant_template: PlantTemplate, is_plant_unlocked: boolean) {

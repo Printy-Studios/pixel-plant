@@ -2,7 +2,7 @@ import constants from './const';
 import Game from './Game';
 import SaveManager from './SaveManager';
 import { ViewID } from './types/Misc';
-import { getPlantTemplateFullyGrownImageURL, getTemplateMaxStageIndex, getTemplateUnlock, secondsToTime } from './util';
+import { getPlantTemplateFullyGrownImageURL, getTemplateMaxStageIndex, getTemplateUnlock, humanReadableTimeFromSeconds, secondsToTime, templateTimeToGrow, templateWateringFrequency } from './util';
 import { PlantTemplate, PlantTemplates } from './types/PlantTemplate';
 import MyCache from './MyCache';
 import Renderer from './Renderer';
@@ -37,6 +37,9 @@ export default class UIManager {
     plant_image: HTMLImageElement = document.createElement('img');
     plant_name: HTMLHeadingElement = document.createElement('h2');
     plant_description: HTMLParagraphElement = document.createElement('p');
+    plant_stages: HTMLLIElement = document.createElement('li');
+    plant_time_to_grow: HTMLLIElement = document.createElement('li');
+    plant_water_frequency: HTMLLIElement = document.createElement('li');
     current_plant_in_menu: PlantTemplate;
 
     collection_images: {
@@ -234,10 +237,22 @@ export default class UIManager {
 
         const plant_button = this.createButton('Plant', 'menu-button');
 
+        const stats = document.createElement('ul');
+
+        stats.appendChild(this.plant_stages);
+        stats.appendChild(this.plant_time_to_grow);
+        stats.appendChild(this.plant_water_frequency);
+
+        const info = document.createElement('div');
+        info.classList.add('plant-entry-info');
+        info.appendChild(this.plant_description)
+        info.appendChild(stats);
+
         plant_menu.appendChild(plant_back);
         plant_menu.appendChild(this.plant_image);
         plant_menu.appendChild(this.plant_name);
-        plant_menu.appendChild(this.plant_description);
+        plant_menu.appendChild(info);
+
         plant_menu.appendChild(plant_button);
 
         plant_button.addEventListener('click', () => {
@@ -333,6 +348,13 @@ export default class UIManager {
         this.plant_image.src = getPlantTemplateFullyGrownImageURL(plant_template);
         this.plant_name.innerHTML = plant_template.name;
         this.plant_description.innerHTML = plant_template.description;
+        this.plant_stages.innerHTML = "<b>Stages: </b>" + plant_template.stages.length;
+        const time_to_grow_seconds = templateTimeToGrow(plant_template, globals.seconds_per_tick);
+        const time_to_grow_str = humanReadableTimeFromSeconds(time_to_grow_seconds);
+        this.plant_time_to_grow.innerHTML = "<b>Time to grow at max water level: </b>" + time_to_grow_str;
+        const water_frequency_seconds = templateWateringFrequency(plant_template, globals.seconds_per_tick);
+        const water_frequency_str = humanReadableTimeFromSeconds(water_frequency_seconds);
+        this.plant_water_frequency.innerHTML = "<b>Must be watered at least every: </b>" + water_frequency_str;
         this.current_plant_in_menu = plant_template;
         this.renderer.showMenu('plant');
     }

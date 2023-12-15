@@ -226,6 +226,10 @@ export default class UIManager {
 
         }
 
+        main_events.after_data_reset.on(() => {
+            this.resetCollectionImages(plant_templates);
+        })
+
         this.renderer.addMenu(collection_menu, 'collection')
     }
 
@@ -458,6 +462,14 @@ export default class UIManager {
             
         } else {
             img_element.src = 'images/question-mark.jpeg'
+        }
+    }
+
+    resetCollectionImages(plant_templates: PlantTemplates) {
+        for(const template_id in plant_templates) {
+            if(template_id != 'basic_plant') {
+                this.updateCollectionImage(plant_templates[template_id], false);
+            }
         }
     }
 }

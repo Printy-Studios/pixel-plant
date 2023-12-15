@@ -42,6 +42,11 @@ ul {
     height: 100vh;
 }
 
+#ui {
+    padding: 4px;
+    box-sizing: border-box;
+}
+
 .menu {
     position: absolute;
     display: flex;
@@ -95,6 +100,8 @@ ul {
 }
 
 .water-button {
+    position: absolute;
+    transform: translate(-50%, -50%);
     border-image: url('images/button-border-blue.png') 14;
     background-color: blue;
     color: white;

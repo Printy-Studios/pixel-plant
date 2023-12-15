@@ -389,7 +389,7 @@ export default class UIManager {
 
         if (plant.isFullyGrown() && unlock) {
             message += '<br><b>You have unlocked a new plant - ' + unlock.name + '. Would you like to plant it?';
-            recently_unlocked = unlock.plant_id;
+            globals.recently_unlocked = unlock.plant_id;
             show_plant_button = true;
         }
 

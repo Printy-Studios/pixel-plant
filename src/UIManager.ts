@@ -87,12 +87,19 @@ export default class UIManager {
         this.progress_message_plant.classList.add('small-button')
         this.progress_message_plant.innerHTML = 'Plant'
 
+        
+
         progress_message_container.appendChild(progress_message);
         progress_message_container.appendChild(this.progress_message_plant)
 
-        this.progress_message_plant.addEventListener('click', () => {
+        console.log(this.progress_message_plant);
+
+        /**
+         * Have to use mousedown instead of click here because otherwise the progress
+         * message container loses focus before the click event is fired
+         */
+        this.progress_message_plant.addEventListener('mousedown', () => {
             main_events.on_request_plant_new_plant.emit(globals.recently_unlocked);
-            //this.game.plantNewPlant(this.game.recently_unlocked)
         })
 
         progress_message_container.addEventListener('focusout', () => {
@@ -365,7 +372,7 @@ export default class UIManager {
         this.renderer.showMenu('plant');
     }
 
-    displayProgressMessage(plant: Plant, plant_templates: PlantTemplates, recently_unlocked: string, ff = true, growth_before: number = null, growth_after: number = null, seconds_elapsed: number = null) {
+    displayProgressMessage(plant: Plant, plant_templates: PlantTemplates, ff = true, growth_before: number = null, growth_after: number = null, seconds_elapsed: number = null) {
 
         
 

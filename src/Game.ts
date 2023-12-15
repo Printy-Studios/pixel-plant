@@ -50,8 +50,6 @@ export default class Game {
 
     current_view: ViewID | null = null;
 
-    recently_unlocked: string;
-
     constructor() {
         main_events.on_request_data_reset.on(this.onRequestDataReset.bind(this));
         main_events.on_request_data_save.on(this.onRequestDataSave.bind(this));
@@ -101,6 +99,7 @@ export default class Game {
     }
 
     onRequestPlantNewPlant(template_id: string) {
+        console.log('planting new plant: ' + template_id);
         this.plantNewPlant(template_id)
     }
 
@@ -161,7 +160,7 @@ export default class Game {
     }
 
     onPlantFullyGrown(plant: Plant) {
-        this.ui.displayProgressMessage(this.plant, this.plant_templates, this.recently_unlocked, false);
+        this.ui.displayProgressMessage(this.plant, this.plant_templates, false);
         this.data.data.unlocked_plants.push(plant.unlocks);
         this.data.saveData(
             globals.seconds_per_tick,
@@ -186,7 +185,7 @@ export default class Game {
 
         const growth_after = this.plant.growth;
         
-        this.ui.displayProgressMessage(this.plant, this.plant_templates, this.recently_unlocked, true, growth_before, growth_after, seconds)
+        this.ui.displayProgressMessage(this.plant, this.plant_templates, true, growth_before, growth_after, seconds)
         
     }
 

@@ -168,7 +168,9 @@ export default class UIManager {
             pace_selector_dropdown.appendChild(option)
         }
 
-        
+        main_events.after_data_reset.on(() => {
+            pace_selector_dropdown.value = "1"
+        })
 
         pace_selector.appendChild(pace_selector_label)
         pace_selector.appendChild(pace_selector_dropdown)

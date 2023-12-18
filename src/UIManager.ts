@@ -12,6 +12,8 @@ import main_events from './main_events';
 import vars from './globals';
 import globals from './globals';
 
+type TabbableElements = HTMLElement[];
+
 export default class UIManager {
 
     data: SaveManager;
@@ -22,8 +24,8 @@ export default class UIManager {
     button: HTMLButtonElement = document.createElement('button');
     menu: HTMLDivElement = document.createElement('div');
 
-    water_button: HTMLDivElement;
-    reset_button: HTMLDivElement;
+    water_button: HTMLButtonElement;
+    reset_button: HTMLButtonElement;
 
     main_menu: HTMLDivElement
     options_menu: HTMLDivElement
@@ -32,7 +34,7 @@ export default class UIManager {
 
     progress_message: HTMLDivElement;
     progress_message_container: HTMLDivElement;
-    progress_message_plant: HTMLDivElement;
+    progress_message_plant: HTMLButtonElement;
 
     plant_image: HTMLImageElement = document.createElement('img');
     plant_name: HTMLHeadingElement = document.createElement('h2');
@@ -41,6 +43,9 @@ export default class UIManager {
     plant_time_to_grow: HTMLLIElement = document.createElement('li');
     plant_water_frequency: HTMLLIElement = document.createElement('li');
     current_plant_in_menu: PlantTemplate;
+
+    tabbable_elements: TabbableElements = []
+    current_tab_index: number = 0;
 
     collection_images: {
         [template_id: string]: HTMLImageElement
@@ -52,16 +57,114 @@ export default class UIManager {
 
         this.button.classList.add('button')
         this.menu.classList.add('menu');
+
+        const NAV_UP = 'ArrowUp';
+        const NAV_DOWN = 'ArrowDown';
+
+        document.addEventListener('keydown', (e) => {
+            // Keyboard navigation
+            if(e.code == NAV_UP) {
+                e.preventDefault();
+                this.navigateUp();
+            } else if (e.code == NAV_DOWN) {
+                e.preventDefault();
+                this.navigateDown();
+            }
+        })
     }
 
-    
+    /**
+     * Keyboard navigation
+     */
+    navigateUp() {
+        let reference_index = this.current_tab_index;
+        const indices_above = this.getIndexes('above', reference_index);
+
+        if(indices_above.length == 0) {
+            reference_index = this.getMaxIndex() + 1;
+        }
+
+        const closest_index = this.getClosetIndex(reference_index, this.getIndexes('above', reference_index))
+
+        this.navigateToIndex(closest_index);
+    }
+
+    navigateDown() {
+        let reference_index = this.current_tab_index;
+        const indices_below = this.getIndexes('below', reference_index);
+
+        if(indices_below.length == 0) {
+            reference_index = 0
+        }
+
+        const closest_index = this.getClosetIndex(reference_index, this.getIndexes('below', reference_index))
+        this.navigateToIndex(closest_index);
+    }
+
+    getMaxIndex() {
+        return Math.max(...this.getIndexes('all'));
+    }
+
+    /**
+     * Returns array of indices for visible tabbable elements
+     * @param direction 
+     * @param reference_index 
+     * @returns 
+     */
+    getIndexes(direction: 'above' | 'below' | 'all' = 'all', reference_index: number = null): number[] {
+        let indices_all: number[] = null;
+
+        const visible_elements = this.getVisibleElements();
+
+        console.log('visible elements: ')
+        console.log(visible_elements)
+
+        if(direction == 'all') {
+            indices_all = visible_elements.map((element) => element.tabIndex);
+        } else if (typeof reference_index == 'number') {
+            indices_all = visible_elements.filter(element => {
+                return direction == 'below' ? element.tabIndex > reference_index : element.tabIndex < reference_index
+            }).map((element) => element.tabIndex)
+        } else {
+            throw new Error(`If direction isn't 'all', reference_index must be specified`);
+        }
+        
+        return indices_all
+    }
+
+    isElementVisible(element: HTMLElement) {
+        return element.offsetParent != null;
+    }
+
+    getVisibleElements() {
+        return this.tabbable_elements.filter((elem) => this.isElementVisible(elem));
+    }
+
+    getElementByIndex(index: number) {
+        return this.getVisibleElements().find(elem => elem.tabIndex == index)
+    }
+
+    getClosetIndex(reference_index: number, from: number[]) {
+        if(from.length == 1) {
+            return from[0];
+        }
+        return from.reduce((a, b) => {
+            //const a = parseInt(a_str);
+            //const b = parseInt(b_str);
+            return Math.abs(b - reference_index) < Math.abs(a - reference_index) ? b : a;
+        })
+    }
+
+    navigateToIndex(index: number) {
+        const target_elem = this.getElementByIndex(index);
+        this.current_tab_index = index;
+        target_elem.focus();
+    }
 
     initGameUI() {
         // Game UI
         
-        this.water_button = this.createButton('Water Plant', 'water-button');
         
-        const water_button = this.water_button
 
         // water_button.innerHTML = 'Water Plant'
         // water_button.style.position = 'absolute'
@@ -71,7 +174,11 @@ export default class UIManager {
         // water_button.tabIndex = 4;
 
         //Back button
-        const back_button = this.createLinkButton('Back', 'main', 'button-tl')
+        const back_button = this.createLinkButton('Back', 'main', 'button-tl', 1)
+
+        this.water_button = this.createButton('Water Plant', 'water-button', 2);
+        
+        const water_button = this.water_button
 
         //Progress message
         const progress_message_container = document.createElement('div')
@@ -83,7 +190,7 @@ export default class UIManager {
         const progress_message = this.progress_message;
         progress_message.innerHTML = 'You were away for n hours n minutes and your plant has grown by x %'
 
-        this.progress_message_plant = this.createButton('Plant', 'menu-button')
+        this.progress_message_plant = this.createButton('Plant', 'menu-button', 3)
         this.progress_message_plant.classList.add('small-button')
         this.progress_message_plant.innerHTML = 'Plant'
 
@@ -91,8 +198,6 @@ export default class UIManager {
 
         progress_message_container.appendChild(progress_message);
         progress_message_container.appendChild(this.progress_message_plant)
-
-        console.log(this.progress_message_plant);
 
         /**
          * Have to use mousedown instead of click here because otherwise the progress
@@ -122,19 +227,21 @@ export default class UIManager {
         //Main menu
 
         //Play button
-        const play_button = this.createViewButton('My Plant', 'plant', 'menu-button', () => {
+        const play_button = this.createViewButton('My Plant', 'plant', 'menu-button', 1, () => {
             main_events.on_request_fast_forward.emit()
             //this.game.fastForwardBySeconds(this.game.getTimeAway())
         });
 
         //Collection button
-        const collection_button = this.createLinkButton('Collection', 'collection', 'menu-button');
-
-        //Options button
-        const options_button = this.createLinkButton('Options', 'options', 'menu-button');
+        const collection_button = this.createLinkButton('Collection', 'collection', 'menu-button', 2);
 
         //Help button
-        const help_button = this.createLinkButton('Help', 'help', 'menu-button');
+        const help_button = this.createLinkButton('Help', 'help', 'menu-button', 3);
+
+        //Options button
+        const options_button = this.createLinkButton('Options', 'options', 'menu-button', 4);
+
+        
 
         this.main_menu = this.createMenu();
 
@@ -151,13 +258,14 @@ export default class UIManager {
 
         const options_menu = this.createMenu();
 
-        const options_back = this.createLinkButton('Back', 'main', 'menu-button')
-
-        const reset_button = this.createButton('Reset Game', 'menu-button')
+        
 
         const pace_selector = document.createElement('div')
         const pace_selector_label = document.createElement('p')
         const pace_selector_dropdown = document.createElement('select')
+
+        // Make dropdown navigatable by arrow keys
+        this.addTabbableElement(pace_selector_dropdown, 1)
 
         pace_selector.classList.add('pace-selector')
 
@@ -182,6 +290,10 @@ export default class UIManager {
         pace_selector.appendChild(pace_selector_label)
         pace_selector.appendChild(pace_selector_dropdown)
 
+        const options_back = this.createLinkButton('Back', 'main', 'menu-button', 2)
+
+        const reset_button = this.createButton('Reset Game', 'menu-button', 3)
+
         options_menu.appendChild(pace_selector)
         options_menu.appendChild(options_back)
         options_menu.appendChild(reset_button)
@@ -205,12 +317,14 @@ export default class UIManager {
 
         const collection_menu = this.createMenu('menu-non-centered')
 
-        const collection_back = this.createLinkButton('Back', 'main', 'menu-button');
+        const collection_back = this.createLinkButton('Back', 'main', 'menu-button', 1);
 
         collection_menu.appendChild(collection_back)
 
+        let button_index = 1;
         for(const template_id in plant_templates) {
-            const plant_button = this.createButton('', 'menu-button');
+            button_index++;
+            const plant_button = this.createButton('', 'menu-button', button_index);
             plant_button.classList.add('plant-button');
             // const plant = await Plant.fromTemplate(template_id, template_id, this.cache)
             const plant_template = plant_templates[template_id];
@@ -244,11 +358,11 @@ export default class UIManager {
         //Plant Entry
         const plant_menu = this.createMenu()
 
-        const plant_back = this.createLinkButton('Back', 'collection', 'menu-button');
+        const plant_back = this.createLinkButton('Back', 'collection', 'menu-button', 1);
 
         this.plant_image.classList.add('plant-entry-image');
 
-        const plant_button = this.createButton('Plant', 'menu-button');
+        const plant_button = this.createButton('Plant', 'menu-button', 2);
 
         const stats = document.createElement('ul');
 
@@ -280,7 +394,7 @@ export default class UIManager {
 
         const help_menu = this.createMenu('menu-non-centered');
 
-        const back_button = this.createLinkButton('Back', 'main');
+        const back_button = this.createLinkButton('Back', 'main', null, 1);
 
         const text_element = document.createElement('p');
 
@@ -299,7 +413,7 @@ export default class UIManager {
         they have, and how frequently they have to be watered. Currently there are 4 plant types in the game. <br><br>
         
         Good luck with your plants and I hope you'll have fun playing this little game!
-        `
+        `;
 
         help_menu.appendChild(back_button);
         help_menu.appendChild(text_element);
@@ -318,15 +432,23 @@ export default class UIManager {
 
     }
 
-    createButton(text: string, class_name: string = null) {
-        const btn = this.button.cloneNode() as HTMLDivElement
+    addTabbableElement(element: HTMLElement, index: number) {
+        element.tabIndex = index;
+        this.tabbable_elements.push(element);
+    }
+
+    createButton(text: string, class_name: string = null, index: number = null) {
+        const btn = this.button.cloneNode() as HTMLButtonElement
         btn.classList.add(class_name)
         btn.innerHTML = text;
+        if(index){
+            this.addTabbableElement(btn, index)
+        }
         return btn;
     }
 
-    createLinkButton(text = "", link_to: string = "", class_name: string = null, on_click: Function = null) {
-        const btn = this.createButton(text, class_name);
+    createLinkButton(text = "", link_to: string = "", class_name: string = null, index: number = null, on_click: Function = null) {
+        const btn = this.createButton(text, class_name, index);
 
         btn.addEventListener('click', () => {
             main_events.on_request_show_menu.emit(link_to)
@@ -338,8 +460,8 @@ export default class UIManager {
         return btn;
     }
 
-    createViewButton(text = "", link_to: ViewID, class_name: string = "", on_click: Function = null) {
-        const btn = this.createButton(text, class_name);
+    createViewButton(text = "", link_to: ViewID, class_name: string = "", index: number = null, on_click: Function = null) {
+        const btn = this.createButton(text, class_name, index);
 
         btn.addEventListener('click', () => {
             main_events.on_request_set_view.emit(link_to);
@@ -430,20 +552,15 @@ export default class UIManager {
     }
 
     calculatePositions(plant: Plant){
-        console.log('calculating positions');
-        console.log(plant.position.y)
         this.water_button.style.top = plant.position.y * constants.scale + 200 + 'px'
         this.water_button.style.left = window.innerWidth / 2 + 'px';
     }
 
     updateCollectionImage(plant_template: PlantTemplate, is_plant_unlocked: boolean) {
 
-        console.log(this.collection_images)
-
         const img_element = this.collection_images[plant_template.plant_id];
         const max_stage = getTemplateMaxStageIndex(plant_template);
-        
-        console.log(img_element);
+
         const plant_button = img_element.closest('button');
 
         if(is_plant_unlocked) {

@@ -21,7 +21,6 @@ export default class WaterLevel {
     }
 
     private validateStages() {
-        console.log(this.stages.length)
         for(let a = 0; a < this.stages.length; a++) {
             
             const stage_a = this.stages[a - 1]
@@ -47,8 +46,6 @@ export default class WaterLevel {
     private calcCurrentStage() {
         for (let i = 0; i < this.stages.length; i++) {
             const stage = this.stages[i];
-            //console.log(stage)
-            //console.log(this.current)
             if(this.current <= stage.to && this.current >= stage.from) {
                 this.current_stage = i;
                 return;
@@ -84,7 +81,6 @@ export default class WaterLevel {
         template.water_level.stages.forEach((stage) => {
             stages.push(stage);
         })
-        console.log(template.water_level)
         return new WaterLevel(
             template.water_level.decrease_rate,
             stages

@@ -74,7 +74,6 @@ export default class Game {
     }
     
     onRequestDataSave() {
-        console.log(globals.seconds_per_tick);
         this.data.saveData(
             globals.seconds_per_tick,
             this.plant
@@ -99,7 +98,6 @@ export default class Game {
     }
 
     onRequestPlantNewPlant(template_id: string) {
-        console.log('planting new plant: ' + template_id);
         this.plantNewPlant(template_id)
     }
 

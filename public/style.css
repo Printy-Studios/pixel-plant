@@ -99,6 +99,11 @@ ul {
     background-color: white;
 }
 
+.button:focus {
+    outline: 4px black solid;
+    outline-offset: -10px;
+}
+
 .water-button {
     position: absolute;
     transform: translate(-50%, -50%);

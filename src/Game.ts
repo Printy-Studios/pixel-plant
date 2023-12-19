@@ -64,6 +64,8 @@ export default class Game {
                 this.fastForwardBySeconds(this.data.getTimeAway())
             }
         })
+
+        this.renderer.hideUI();
     }
 
     async onRequestDataReset() {

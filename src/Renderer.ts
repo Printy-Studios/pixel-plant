@@ -144,11 +144,13 @@ export default class Renderer {
     }
 
     hideUI() {
-        this.ui.style.display = 'none'
+        this.ui.style.display = 'none';
+        this.canvas.style.display = 'none';
     }
 
     showUI() {
         this.ui.style.display = 'block';
+        this.canvas.style.display = 'flex';
     }
 
     hideMenu() {

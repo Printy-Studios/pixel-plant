@@ -44,8 +44,6 @@ export default class Game {
 
     plants: Plants = {}
 
-    
-
     loading: boolean = true;
 
     current_view: ViewID | null = null;
@@ -83,10 +81,10 @@ export default class Game {
     }
     
     onRequestDataSave() {
-        this.data.saveData(
-            globals.seconds_per_tick,
-            this.plant
-        )
+        this.data.saveData({
+            seconds_per_tick: globals.seconds_per_tick,
+            plant: this.plant
+        })
     }
 
     onRequestShowMenu(menu_id: string) {
@@ -258,10 +256,9 @@ export default class Game {
     }
 
     tick() {
-        this.data.saveData(
-            globals.seconds_per_tick,
-            this.plant
-        );
+        this.data.saveData({
+            plant: this.plant
+        });
         this.plant.tick();
     }
 

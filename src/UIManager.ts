@@ -184,32 +184,42 @@ export default class UIManager {
         const progress_message_container = document.createElement('div')
         this.progress_message_container = progress_message_container
         progress_message_container.classList.add('progress-message')
-        progress_message_container.tabIndex = 0;
+        // progress_message_container.tabIndex = 0;
+
+        const progress_message_bottom = document.createElement('div');
+        progress_message_bottom.classList.add('progress-message-bottom');
 
         this.progress_message = document.createElement('p')
         const progress_message = this.progress_message;
         progress_message.innerHTML = 'You were away for n hours n minutes and your plant has grown by x %'
 
-        this.progress_message_plant = this.createButton('Plant', 'menu-button', 3)
+        const dismiss_button = this.createButton('Dismiss', 'menu-button', 3, () => {
+            progress_message_container.style.display = 'none';
+        });
+
+        this.progress_message_plant = this.createButton('Plant', 'menu-button', 4)
         this.progress_message_plant.classList.add('small-button')
         this.progress_message_plant.innerHTML = 'Plant'
 
         
 
         progress_message_container.appendChild(progress_message);
-        progress_message_container.appendChild(this.progress_message_plant)
+        progress_message_container.appendChild(progress_message_bottom);
+        progress_message_bottom.appendChild(dismiss_button);
+        progress_message_bottom.appendChild(this.progress_message_plant)
 
         /**
          * Have to use mousedown instead of click here because otherwise the progress
          * message container loses focus before the click event is fired
          */
         this.progress_message_plant.addEventListener('mousedown', () => {
+            progress_message_container.style.display = 'none';
             main_events.on_request_plant_new_plant.emit(globals.recently_unlocked);
         })
 
-        progress_message_container.addEventListener('focusout', () => {
-            progress_message_container.style.display = 'none'
-        })
+        // progress_message_container.addEventListener('focusout', () => {
+        //     progress_message_container.style.display = 'none'
+        // })
 
         water_button.addEventListener('click', () => {
             main_events.on_request_water_plant.emit();

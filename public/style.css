@@ -173,6 +173,13 @@ ul {
     transform: translate(-50%, -50%);
 }
 
+.progress-message-bottom {
+    width: 100%;
+    gap: 8px;
+    display: flex;
+    justify-content: space-between;
+}
+
 .pace-selector {
     display: flex;
     justify-content: space-between;

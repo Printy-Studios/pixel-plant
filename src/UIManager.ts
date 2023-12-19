@@ -27,6 +27,8 @@ export default class UIManager {
     water_button: HTMLButtonElement;
     reset_button: HTMLButtonElement;
 
+    play_button: HTMLButtonElement;
+
     main_menu: HTMLDivElement
     options_menu: HTMLDivElement
 
@@ -46,6 +48,8 @@ export default class UIManager {
 
     tabbable_elements: TabbableElements = []
     current_tab_index: number = 0;
+
+
 
     collection_images: {
         [template_id: string]: HTMLImageElement
@@ -233,11 +237,11 @@ export default class UIManager {
 
     
 
-    initMainMenu() {
+    initMainMenu(is_new_game: boolean) {
         //Main menu
 
         //Play button
-        const play_button = this.createViewButton('My Plant', 'plant', 'menu-button', 1, () => {
+        this.play_button = this.createViewButton(is_new_game ? 'New Game' : 'My Plant', 'plant', 'menu-button', 1, () => {
             main_events.on_request_fast_forward.emit()
             //this.game.fastForwardBySeconds(this.game.getTimeAway())
         });
@@ -255,7 +259,7 @@ export default class UIManager {
 
         this.main_menu = this.createMenu();
 
-        this.main_menu.appendChild(play_button);
+        this.main_menu.appendChild(this.play_button);
         this.main_menu.appendChild(collection_button);
         this.main_menu.appendChild(help_button);
         this.main_menu.appendChild(options_button);
@@ -322,7 +326,7 @@ export default class UIManager {
         this.renderer.addMenu(options_menu, 'options')
     }
 
-    initCollectionMenu(plant_templates: PlantTemplates, unlocked_plants: string[]) {
+    initCollectionMenu(plant_templates: PlantTemplates, unlocked_plants: string[], grown_plants: string[]) {
         // Collection menu
 
         const collection_menu = this.createMenu('menu-non-centered')
@@ -347,9 +351,10 @@ export default class UIManager {
 
             plant_button.appendChild(img_element);
 
-            let is_plant_unlocked = unlocked_plants.includes(plant_template.plant_id);
+            const is_plant_unlocked = unlocked_plants.includes(plant_template.plant_id);
+            const is_plant_grown = grown_plants.includes(plant_template.plant_id);
 
-            this.updateCollectionImage(plant_template, is_plant_unlocked);
+            this.updateCollectionImage(plant_template, is_plant_unlocked, is_plant_grown);
             
             
 
@@ -431,15 +436,19 @@ export default class UIManager {
         this.renderer.addMenu(help_menu, 'help');
     }
 
-    async initUi(plant_templates: PlantTemplates, unlocked_plants: string[]) {
+    async initUi(plant_templates: PlantTemplates, unlocked_plants: string[], grown_plants: string[], is_new_game: boolean) {
         
         this.initGameUI();
-        this.initMainMenu();
+        this.initMainMenu(is_new_game);
         this.initOptionsMenu();
         this.initPlantEntryMenu();
-        this.initCollectionMenu(plant_templates, unlocked_plants);
+        this.initCollectionMenu(plant_templates, unlocked_plants, grown_plants);
         this.initHelpMenu();
 
+    }
+
+    setPlayButtonText(str: string) {
+        this.play_button.innerHTML = str;
     }
 
     addTabbableElement(element: HTMLElement, index: number) {
@@ -447,13 +456,18 @@ export default class UIManager {
         this.tabbable_elements.push(element);
     }
 
-    createButton(text: string, class_name: string = null, index: number = null) {
+    createButton(text: string, class_name: string = null, index: number = null, on_click: Function = null) {
         const btn = this.button.cloneNode() as HTMLButtonElement
         btn.classList.add(class_name)
         btn.innerHTML = text;
         if(index){
             this.addTabbableElement(btn, index)
         }
+        btn.addEventListener('click', () => {
+            if(on_click) {
+                on_click()
+            }
+        })
         return btn;
     }
 
@@ -566,19 +580,26 @@ export default class UIManager {
         this.water_button.style.left = window.innerWidth / 2 + 'px';
     }
 
-    updateCollectionImage(plant_template: PlantTemplate, is_plant_unlocked: boolean) {
+    updateCollectionImage(plant_template: PlantTemplate, is_plant_unlocked: boolean, is_plant_grown: boolean) {
 
         const img_element = this.collection_images[plant_template.plant_id];
-        const max_stage = getTemplateMaxStageIndex(plant_template);
+        
 
         const plant_button = img_element.closest('button');
 
         if(is_plant_unlocked) {
+
+            let stage = 0;
+
+            if(is_plant_grown){
+                stage = getTemplateMaxStageIndex(plant_template)
+            }
             //const image = this.cache.get('image_blobs/' + plant_template.plant_id + '/' + max_stage)
 
-            const image_url = plant_template.stages[max_stage].image_url//URL.createObjectURL(image);
 
-            img_element.src = image_url
+            const image_url = plant_template.stages[stage].image_url//URL.createObjectURL(image);
+
+                img_element.src = image_url
 
 
             //Check if text has already been added to the button
@@ -605,7 +626,7 @@ export default class UIManager {
     resetCollectionImages(plant_templates: PlantTemplates) {
         for(const template_id in plant_templates) {
             if(template_id != 'basic_plant') {
-                this.updateCollectionImage(plant_templates[template_id], false);
+                this.updateCollectionImage(plant_templates[template_id], false, false);
             }
         }
     }

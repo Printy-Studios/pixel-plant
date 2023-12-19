@@ -13,6 +13,8 @@ export type SaveData = {
     pace: number,
     max_id: number,
     unlocked_plants: string[],
+    grown_plants: string[],
     plant: PlantData,
-    leave_time: number
+    leave_time: number,
+    new_game: boolean
 }

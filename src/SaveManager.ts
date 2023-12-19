@@ -4,6 +4,14 @@ import MyStorage from './MyStorage';
 import Plant from './Plant';
 import { SaveData } from './types/SaveData';
 
+type DataSaveRequest = {
+    seconds_per_tick?: number,
+    plant?: Plant,
+    new_game?: boolean,
+    unlocked_plants?: string[],
+    grown_plants?: string[]
+}
+
 export default class SaveManager {
 
     storage: MyStorage
@@ -16,10 +24,7 @@ export default class SaveManager {
 
     data: SaveData
 
-    saveData(
-        seconds_per_tick: number,
-        plant: Plant
-    ) {
+    saveData(data: DataSaveRequest){
 
         //If custom data object was passed, save that
         // if(data) {
@@ -27,17 +32,29 @@ export default class SaveManager {
         //     return;
         // }
         //Otherwise get current plants and save them
-        this.updateCachedData(seconds_per_tick, plant)
+        this.updateCachedData(data);
         this.setData(this.data)
     }
 
-    updateCachedData(
-        seconds_per_tick: number,
-        plant: Plant
-    ) {
-        this.data.pace = 1 / seconds_per_tick;
-        this.data.plant = plant.toJSON();
+    updateCachedData(data: DataSaveRequest){
+        if (data.seconds_per_tick != undefined) {
+            this.data.pace = 1 / data.seconds_per_tick;
+        }
+        if (data.plant != undefined) {
+            this.data.plant = data.plant.toJSON();
+        }
+        if(data.new_game !== undefined) {
+            this.data.new_game = data.new_game;
+        }
+        if(data.unlocked_plants !== undefined) {
+            this.data.unlocked_plants = data.unlocked_plants;
+        }
+        if(data.grown_plants !== undefined) {
+            this.data.grown_plants = data.grown_plants;
+        }
         this.data.leave_time = new Date().getTime();
+        
+        
     }
 
     setCachedData(data: SaveData) {
@@ -52,7 +69,9 @@ export default class SaveManager {
             max_id: 1,
             leave_time: null,
             unlocked_plants: ["basic_plant"],
-            plant: basic_plant.toJSON()
+            grown_plants: [],
+            plant: basic_plant.toJSON(),
+            new_game: true,
         }
 
         this.setData(data);

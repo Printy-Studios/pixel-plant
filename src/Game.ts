@@ -58,9 +58,10 @@ export default class Game {
         main_events.on_request_fast_forward.on(this.onRequestFastForward.bind(this));
         main_events.on_request_plant_new_plant.on(this.onRequestPlantNewPlant.bind(this));
         main_events.on_request_water_plant.on(this.onRequestWaterPlant.bind(this));
+        main_events.after_data_reset.on(this.afterDataReset.bind(this));
 
         window.addEventListener('focus', () => {
-            if(this.current_view == 'plant') {
+            if(this.current_view == 'plant' && !this.data.data.new_game) {
                 this.fastForwardBySeconds(this.data.getTimeAway())
             }
         })
@@ -73,6 +74,12 @@ export default class Game {
         if(!confirm_reset) return;
         await this.data.resetData();
         await this.init()
+    }
+
+    afterDataReset() {
+        if(this.ui.play_button) {
+            this.ui.setPlayButtonText('New Game');
+        }
     }
     
     onRequestDataSave() {
@@ -105,16 +112,23 @@ export default class Game {
 
     async init() {
         this.setLoading(true)
-        await this.data.setDataIfNull();
+        console.log(this.cache.items);
         await this.initTemplates();
         await this.initImages();
+        await this.data.setDataIfNull();
         this.initTemplateImageURLs();
+        console.log(this.cache.items);
         globals.seconds_per_tick = 1 / this.data.data.pace
         window.addEventListener('resize', () => {
             this.calculatePositions()
         })
         if(!this.first_init) {
-            await this.ui.initUi(this.plant_templates, this.data.data.unlocked_plants);
+            await this.ui.initUi(
+                this.plant_templates, 
+                this.data.data.unlocked_plants, 
+                this.data.data.grown_plants, 
+                this.data.data.new_game
+            );
             this.first_init = true;
         }
         
@@ -161,20 +175,26 @@ export default class Game {
 
     onPlantFullyGrown(plant: Plant) {
         this.ui.displayProgressMessage(this.plant, this.plant_templates, false);
-        this.data.data.unlocked_plants.push(plant.unlocks);
-        this.data.saveData(
-            globals.seconds_per_tick,
-            this.plant
-        );
+        
+        this.data.saveData({
+            plant: this.plant,
+            unlocked_plants: [...this.data.data.unlocked_plants, plant.unlocks],
+            grown_plants: [...this.data.data.grown_plants, plant.plant_id]
+        });
 
         if(plant.unlocks) {
             const unlocked_template = this.plant_templates[plant.unlocks];
-            this.ui.updateCollectionImage(unlocked_template, true)
+            this.ui.updateCollectionImage(unlocked_template, true, false)
         }
+
+        this.ui.updateCollectionImage(this.plant_templates[plant.plant_id], true, true);
         
     }
 
     fastForwardBySeconds(seconds: number) {
+        if(this.data.data.new_game) {
+            return;
+        }
         if(!seconds) {
             return;
         }
@@ -194,9 +214,19 @@ export default class Game {
     }
 
     setView(view_name: ViewID | null) {
+        console.log('setting view')
         this.current_view = view_name
         if(view_name) {
             this.renderer.hideMenu();
+        }
+
+        if(view_name == 'plant') {
+            if(this.data.data.new_game == true) {
+                this.data.saveData({
+                    new_game: false
+                })
+                this.ui.setPlayButtonText('My Plant');
+            }
         }
         
     }

@@ -120,9 +120,6 @@ export default class UIManager {
 
         const visible_elements = this.getVisibleElements();
 
-        console.log('visible elements: ')
-        console.log(visible_elements)
-
         if(direction == 'all') {
             indices_all = visible_elements.map((element) => element.tabIndex);
         } else if (typeof reference_index == 'number') {
@@ -503,8 +500,8 @@ export default class UIManager {
         return menu;
     }
 
-    showPlantMenu(plant_template: PlantTemplate) {
-        this.plant_image.src = getPlantTemplateFullyGrownImageURL(plant_template);
+    showPlantMenu(plant_template: PlantTemplate, is_plant_grown: boolean) {
+        this.plant_image.src = is_plant_grown ? getPlantTemplateFullyGrownImageURL(plant_template) : plant_template.stages[0].image_url;
         this.plant_name.innerHTML = plant_template.name;
         this.plant_description.innerHTML = plant_template.description;
         this.plant_stages.innerHTML = "<b>Stages: </b>" + plant_template.stages.length;
@@ -612,9 +609,11 @@ export default class UIManager {
                 //Additionally we can add the event lisetener, because this above if statement
                 //will only be true once, when the plant isn't unlocked and there is no text
                 plant_button.addEventListener('click', () => {
-                    this.showPlantMenu(plant_template);
+                    this.showPlantMenu(plant_template, is_plant_grown);
                 });
             }
+
+            
             
 
             

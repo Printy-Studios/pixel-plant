@@ -83,7 +83,7 @@ export function getTemplateUnlock(template_id: string, all_templates: PlantTempl
  */
 export function getTemplateMaxGrowth(plant_template: PlantTemplate) {
     const max_stage_index = getTemplateMaxStageIndex(plant_template);
-    return plant_template.stages[max_stage_index].at_growth;
+    return plant_template.stages[max_stage_index].at_growth * plant_template.multiplier;
 }
 
 /**
@@ -108,7 +108,7 @@ export function getTemplateMaxWaterStage(plant_template: PlantTemplate) {
 export function getTemplateMaxGrowthRate(plant_template: PlantTemplate) {
     const max_water_level = getTemplateMaxWaterStage(plant_template);
 
-    return max_water_level.growth_rate;
+    return max_water_level.growth_rate * plant_template.multiplier;
 }
 
 /**
@@ -117,7 +117,7 @@ export function getTemplateMaxGrowthRate(plant_template: PlantTemplate) {
 export function templateTimeToGrow(plant_template: PlantTemplate, seconds_per_tick: number) {
     const max_growth = getTemplateMaxGrowth(plant_template);
     const max_growth_rate = getTemplateMaxGrowthRate(plant_template);
-    return max_growth / max_growth_rate * seconds_per_tick;
+    return max_growth * plant_template.multiplier / max_growth_rate * seconds_per_tick;
 }
 
 /**
@@ -125,6 +125,6 @@ export function templateTimeToGrow(plant_template: PlantTemplate, seconds_per_ti
  * 
  */
 export function templateWateringFrequency(plant_template: PlantTemplate, seconds_per_tick: number) {
-    const water_decrease_rate = plant_template.water_level.decrease_rate;
+    const water_decrease_rate = plant_template.water_level.decrease_rate * plant_template.multiplier;
     return 100 / water_decrease_rate * seconds_per_tick;
 }

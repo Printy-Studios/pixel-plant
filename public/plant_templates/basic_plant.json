@@ -4,7 +4,7 @@
     "name": "Flower of Joy",
     "description": "This beautiful flower, when fully grown, radiates special waves that increase the motivation, productivity and well-being of the nearby individuals, from which it gets its fitting name",
     "water_level": {
-        "decrease_rate": 4,
+        "decrease_rate": 0.05,
         "stages": [
             {
                 "from": 0,
@@ -23,24 +23,25 @@
             }
         ]
     },
+    "multiplier": 4,
     "stages": [
         {
-            "at_growth": 50
+            "at_growth": 400
         },
         {
-            "at_growth": 100
+            "at_growth": 800
         },
         {
-            "at_growth": 150
+            "at_growth": 1400
         },
         {
-            "at_growth": 200
+            "at_growth": 2000
         },
         {
-            "at_growth": 250
+            "at_growth": 2400
         },
         {
-            "at_growth": 300
+            "at_growth": 3000
         }
     ]
 }

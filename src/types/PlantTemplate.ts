@@ -3,6 +3,7 @@ export type PlantTemplate = {
     name: string,
     description: string,
     unlocks?: string,
+    multiplier: number
     water_level: {
         decrease_rate: number,
         stages: {

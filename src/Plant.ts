@@ -119,6 +119,7 @@ export default class Plant extends GameObject {
 
     static async stagesFromTemplate(template: PlantTemplate, cache: MyCache) {
         const plant_stages: PlantStage[] = []
+        const multiplier = template.multiplier;
         for(let i = 0; i < template.stages.length; i++) {
             const res_id = getPlantImageID(template.plant_id, i)
             
@@ -126,7 +127,7 @@ export default class Plant extends GameObject {
 
             //Plant data
             const sprite = new Sprite(image);
-            const at_growth = template.stages[i].at_growth
+            const at_growth = template.stages[i].at_growth * multiplier;
 
             plant_stages.push(
                 {
@@ -152,7 +153,7 @@ export default class Plant extends GameObject {
         const template: PlantTemplate = cache.get(res_id);
 
         const stages = await Plant.stagesFromTemplate(template, cache);
-        const water_level = WaterLevel.fromTemplate(template)
+        const water_level = WaterLevel.fromTemplate(template,)
         const options: PlantOptions = {
             plant_id: template.plant_id,
             water_level,

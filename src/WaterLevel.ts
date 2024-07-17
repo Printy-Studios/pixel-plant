@@ -78,11 +78,12 @@ export default class WaterLevel {
 
     static fromTemplate(template: PlantTemplate) {
         const stages: WaterLevelStage[] = []
+        const multiplier = template.multiplier;
         template.water_level.stages.forEach((stage) => {
-            stages.push(stage);
+            stages.push( {...stage, growth_rate: stage.growth_rate * multiplier});
         })
         return new WaterLevel(
-            template.water_level.decrease_rate,
+            template.water_level.decrease_rate * multiplier,
             stages
         )
     }

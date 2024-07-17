@@ -1,0 +1,44 @@
+{
+    "plant_id": "red_quartz",
+    "name": "Read Quartz",
+    "description": "This vibrantly red flower gets its name from the crystal-like shape of its leaves. Its red color comes from the fact that it most likes warm temperature and requires little watering",
+    "multiplier": 864,
+    "water_level": {
+        "decrease_rate": 0.00002,
+        "stages": [
+            {
+                "from": 20,
+                "to": 80,
+                "growth_rate": 2
+            },
+            {
+                "from": 80,
+                "to": 100,
+                "growth_rate": 8
+            }
+        ]
+    },
+    "stages": [
+        {
+            "at_growth": 50
+        },
+        {
+            "at_growth": 100
+        },
+        {
+            "at_growth": 150
+        },
+        {
+            "at_growth": 200
+        },
+        {
+            "at_growth": 250
+        },
+        {
+            "at_growth": 300
+        },
+        {
+            "at_growth": 400
+        }
+    ]
+}

@@ -110,16 +110,15 @@ export default class Game {
 
     async init() {
         this.setLoading(true)
-        console.log(this.cache.items);
         await this.initTemplates();
         await this.initImages();
         await this.data.setDataIfNull();
         this.initTemplateImageURLs();
-        console.log(this.cache.items);
         globals.seconds_per_tick = 1 / this.data.data.pace
         window.addEventListener('resize', () => {
             this.calculatePositions()
         })
+        console.log(this.data.data);
         if(!this.first_init) {
             await this.ui.initUi(
                 this.plant_templates, 
@@ -212,7 +211,6 @@ export default class Game {
     }
 
     setView(view_name: ViewID | null) {
-        console.log('setting view')
         this.current_view = view_name
         if(view_name) {
             this.renderer.hideMenu();
@@ -308,6 +306,14 @@ export default class Game {
     setPlant(plant: Plant) {
         this.plant = plant;
         this.plant.onFullyGrown(this.onPlantFullyGrown.bind(this));
+    }
+
+    unlockAll() {
+        this.data.saveData({
+            unlocked_plants: [...constants.plant_template_ids]
+        })
+
+        alert('All plants have been unlocked, please refresh the page');
     }
 
 }

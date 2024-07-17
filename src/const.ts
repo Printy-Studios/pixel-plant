@@ -10,7 +10,8 @@ const constants = {
     plant_template_ids: [
         "basic_plant",
         "yellow_dip",
-        "blue_haze"
+        "blue_haze",
+        "red_quartz"
     ]
 }
 

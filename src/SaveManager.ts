@@ -61,10 +61,10 @@ export default class SaveManager {
         this.data = data;
     }
 
-    async setDataToDefaults() {
+    async getDefaultData(): Promise<SaveData> {
         const basic_plant = await Plant.fromTemplate(0, 'basic_plant', this.cache);
-        
-        const data: SaveData = {
+
+        return {
             pace: 1,
             max_id: 1,
             leave_time: null,
@@ -73,6 +73,11 @@ export default class SaveManager {
             plant: basic_plant.toJSON(),
             new_game: true,
         }
+    }
+
+    async setDataToDefaults() {
+        
+        const data = await this.getDefaultData();
 
         this.setData(data);
 
@@ -96,10 +101,12 @@ export default class SaveManager {
     }
 
     async setDataIfNull() {
+        
         if(!this.storage.has('data')) {
             await this.setDataToDefaults();
         } else {
-            this.data = this.getData();
+            const default_data = await this.getDefaultData();
+            this.data = { ...default_data, ...this.getData()};
         }
     }
 

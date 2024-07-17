@@ -3,8 +3,9 @@
     "unlocks": "blue_haze",
     "name": "Yellow Dip",
     "description": "This completely yellow plant, appropriately named, is a plant that likes to grow in very sunny places. It's leaves are often used in herbal teas",
+    "multiplier": 54,
     "water_level": {
-        "decrease_rate": 4,
+        "decrease_rate": 0.002,
         "stages": [
             {
                 "from": 0,

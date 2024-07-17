@@ -1,9 +1,11 @@
 {
     "plant_id": "blue_haze",
+    "unlocks": "red_quartz",
     "name": "Blue Haze",
     "description": "This mysterious-looking blue plant is a great addition to rooms with a calm, simple atmosphere. Blue Haze grows the best in dark and humid places, and it gets its blue tone due to the amount of water that it absorbs, and as such it requires to be watered often.",
+    "multiplier": 186,
     "water_level": {
-        "decrease_rate": 4,
+        "decrease_rate": 0.0001,
         "stages": [
             {
                 "from": 0,

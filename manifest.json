@@ -1,14 +1,14 @@
 {
-    "short_name": "MDN",
-    "name": "MDN Web Docs",
+    "short_name": "Pixel Plant",
+    "name": "My Pixel Plant",
     "icons": [
       {
-        "src": "./images/basic_plant/basic_plant_5.png",
-        "sizes": "192x192",
+        "src": "./images/logo.png",
+        "sizes": "16x16",
         "type": "image/png"
       }
     ],
-    "start_url": ".",
+    "start_url": "./index.html",
     "display": "standalone",
     "theme_color": "#000000",
     "background_color": "#ffffff"

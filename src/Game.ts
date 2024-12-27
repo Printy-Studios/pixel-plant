@@ -239,12 +239,15 @@ export default class Game {
             if(this.renderer.menu) {
                 this.renderer.currentMenu().style.display = 'none'
             }
+            document.getElementById('loading').style.display = 'flex';
         } else {
             if(this.renderer.menu) {
                 this.renderer.currentMenu().style.display = 'block'
             } else {
                 this.renderer.ui.style.display = 'block'
             }
+            document.getElementById('loading').style.display = 'none';
+
             
         }
     }
